@@ -1,0 +1,2163 @@
+{
+  "info": {
+    "_postman_id": "ec76c9c0-6d27-4754-ac13-69fa395a8958",
+    "name": "AutomationExercise-API",
+    "description": "### Welcome to Postman! This is your first collection. \n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests\n• Test your API in real-world scenarios\n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "49376389",
+    "_collection_link": "https://omarrtarek74-3432134.postman.co/workspace/46e432e9-c847-43d2-8922-f847cfe7324c/collection/49376389-ec76c9c0-6d27-4754-ac13-69fa395a8958?action=share&source=collection_link&creator=49376389"
+  },
+  "item": [
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "TC1_Get_All_Products_List",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "de9ad928-3d3a-4055-a505-5da056b1fbe8",
+                "exec": [
+                  "// ===============================================",
+                  "// Test Case 1: GET All Products List",
+                  "// ===============================================",
+                  "",
+                  "// Parse response safely",
+                  "let jsonData;",
+                  "try {",
+                  "    jsonData = pm.response.json();",
+                  "} catch (e) {",
+                  "    console.error(\"FAILED to parse JSON response:\", e.message);",
+                  "    jsonData = null;",
+                  "}",
+                  "",
+                  "const isValidJson = jsonData && typeof jsonData === \"object\";",
+                  "const hasProducts = isValidJson && jsonData.hasOwnProperty('products');",
+                  "const products = hasProducts && Array.isArray(jsonData.products) ? jsonData.products : [];",
+                  "",
+                  "// ===============================================",
+                  "// RESPONSE-LEVEL TESTS",
+                  "// ===============================================",
+                  "",
+                  "pm.test(\"Test 1: HTTP status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Test 2: Response time is less than 1.5 seconds\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});",
+                  "",
+                  "pm.test(\"Test 3: Response Content-Type header exists\", function () {",
+                  "    pm.response.to.have.header('Content-Type');",
+                  "});",
+                  "",
+                  "// ===============================================",
+                  "// DATA STRUCTURE TESTS",
+                  "// ===============================================",
+                  "",
+                  "pm.test(\"Test 4: Response body is valid JSON\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON object\").to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"Test 5: Response contains 'responseCode' field with value 200\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        pm.expect(jsonData).to.have.property('responseCode');",
+                  "        pm.expect(jsonData.responseCode).to.eql(200);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"Test 6: Response contains 'products' array\", function () {",
+                  "    pm.expect(hasProducts, \"'products' property should exist\").to.be.true;",
+                  "    pm.expect(jsonData.products).to.be.an('array', \"'products' should be an array\");",
+                  "});",
+                  "",
+                  "pm.test(\"Test 7: Products array is not empty\", function () {",
+                  "    pm.expect(products.length, \"Products array should contain at least one item\").to.be.above(0);",
+                  "});",
+                  "",
+                  "// ===============================================",
+                  "// PRODUCT VALIDATION TESTS",
+                  "// ===============================================",
+                  "",
+                  "if (products.length > 0) {",
+                  "    ",
+                  "    pm.test(\"Test 8: Each product has a unique 'id'\", function () {",
+                  "        const ids = products.map(p => p.id);",
+                  "        const uniqueIds = new Set(ids);",
+                  "        pm.expect(uniqueIds.size).to.equal(ids.length, ",
+                  "            `Found ${ids.length - uniqueIds.size} duplicate ID(s)`);",
+                  "    });",
+                  "",
+                  "    pm.test(\"Test 9: Each product has required fields\", function () {",
+                  "        const requiredFields = ['id', 'name', 'price', 'brand', 'category'];",
+                  "        ",
+                  "        products.forEach(function(product, idx) {",
+                  "            requiredFields.forEach(field => {",
+                  "                const hasField = Object.prototype.hasOwnProperty.call(product, field);",
+                  "                if (!hasField) {",
+                  "                    console.error(`Product[${idx}] missing '${field}':`, JSON.stringify(product));",
+                  "                }",
+                  "                pm.expect(hasField, ",
+                  "                    `Product[${idx}] missing '${field}' field`",
+                  "                ).to.be.true;",
+                  "            });",
+                  "        });",
+                  "    });",
+                  "",
+                  "    pm.test(\"Test 10: Each product 'name' is a non-empty string\", function () {",
+                  "        products.forEach(function(product, idx) {",
+                  "            pm.expect(product.name).to.be.a('string', ",
+                  "                `Product[${idx}] name should be string`);",
+                  "            pm.expect(product.name.trim().length).to.be.above(0, ",
+                  "                `Product[${idx}] name should not be empty`);",
+                  "        });",
+                  "    });",
+                  "",
+                  "    pm.test(\"Test 11: Each product 'price' follows format 'Rs. XXX'\", function () {",
+                  "        const pricePattern = /^Rs\\.\\s*\\d+$/;",
+                  "        products.forEach(function(product, idx) {",
+                  "            pm.expect(product.price).to.be.a('string', ",
+                  "                `Product[${idx}] price should be string`);",
+                  "            pm.expect(product.price).to.match(pricePattern, ",
+                  "                `Product[${idx}] price format invalid: \"${product.price}\"`);",
+                  "        });",
+                  "    });",
+                  "",
+                  "    pm.test(\"Test 12: Each product 'brand' is a non-empty string\", function () {",
+                  "        products.forEach(function(product, idx) {",
+                  "            pm.expect(product.brand).to.be.a('string', ",
+                  "                `Product[${idx}] brand should be string`);",
+                  "            pm.expect(product.brand.trim().length).to.be.above(0, ",
+                  "                `Product[${idx}] brand should not be empty`);",
+                  "        });",
+                  "    });",
+                  "",
+                  "    // ===============================================",
+                  "    // CONSOLE LOGGING",
+                  "    // ===============================================",
+                  "    ",
+                  "    console.log(\"===============================================\");",
+                  "    console.log(\"    TEST CASE 1: GET ALL PRODUCTS LIST\");",
+                  "    console.log(\"===============================================\");",
+                  "    console.log(\"\");",
+                  "    console.log(\"Response Summary:\");",
+                  "    console.log(\"  Status Code:\", pm.response.status, pm.response.code);",
+                  "    console.log(\"  Response Time:\", pm.response.responseTime + \"ms\");",
+                  "    console.log(\"  Content-Type:\", pm.response.headers.get('Content-Type'));",
+                  "    console.log(\"\");",
+                  "    console.log(\"Products Data:\");",
+                  "    console.log(\"  Total Products:\", products.length);",
+                  "    console.log(\"  Response Code (body):\", jsonData.responseCode);",
+                  "    console.log(\"  All Products Have Unique IDs:\", new Set(products.map(p => p.id)).size === products.length ? \"Yes\" : \"No\");",
+                  "    console.log(\"\");",
+                  "    console.log(\"First Product Details:\");",
+                  "    console.log(\"  ID:\", products[0].id);",
+                  "    console.log(\"  Name:\", products[0].name);",
+                  "    console.log(\"  Price:\", products[0].price);",
+                  "    console.log(\"  Brand:\", products[0].brand);",
+                  "    console.log(\"  Category:\", products[0].category.category);",
+                  "    console.log(\"  User Type:\", products[0].category.usertype);",
+                  "    console.log(\"\");",
+                  "    console.log(\"Environment Variables Saved:\");",
+                  "    console.log(\"  totalProducts:\", products.length);",
+                  "    console.log(\"  firstProductId:\", products[0].id);",
+                  "    console.log(\"  firstProductName:\", products[0].name);",
+                  "    console.log(\"  firstProductPrice:\", products[0].price);",
+                  "    console.log(\"  firstProductBrand:\", products[0].brand);",
+                  "    console.log(\"\");",
+                  "    console.log(\"===============================================\");",
+                  "    ",
+                  "} else {",
+                  "    console.error(\"CRITICAL: No products found in response!\");",
+                  "    console.error(\"Response body:\", JSON.stringify(jsonData, null, 2));",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "2e9c66f7-e50f-4f27-a03f-620a8a7e92c4",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BaseURL_WithAPI_Path}}productsList",
+              "host": [
+                "{{BaseURL_WithAPI_Path}}productsList"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC2_POST_To_All_Products_List",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "c1e22d1f-a1c5-49ba-9363-5df5c1028bb3",
+                "exec": [
+                  "// ===============================================",
+                  "// Test Case 2: POST to All Products List (405)",
+                  "// ===============================================",
+                  "",
+                  "// ═══════════════════════════════════════",
+                  "// PARSE RESPONSE SAFELY",
+                  "// ═══════════════════════════════════════",
+                  "let jsonData;",
+                  "try {",
+                  "    jsonData = pm.response.json();",
+                  "} catch (e) {",
+                  "    console.error(\"Failed to parse JSON:\", e);",
+                  "    jsonData = null;",
+                  "}",
+                  "",
+                  "const isValidJson = jsonData && typeof jsonData === \"object\";",
+                  "",
+                  "// ═══════════════════════════════════════",
+                  "// RESPONSE-LEVEL TESTS",
+                  "// ═══════════════════════════════════════",
+                  "",
+                  "pm.test(\"Test 1: [Response] Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Test 2: [Response] Response time is less than 1 second\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});",
+                  "",
+                  "pm.test(\"Test 3: [Response] Content-Type header exists\", function () {",
+                  "    pm.response.to.have.header('Content-Type');",
+                  "});",
+                  "",
+                  "// ═══════════════════════════════════════",
+                  "// DATA STRUCTURE TESTS",
+                  "// ═══════════════════════════════════════",
+                  "",
+                  "pm.test(\"Test 4: [Structure] Response body is valid JSON\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON object\").to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"Test 5: [Structure] Contains 'responseCode' field\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        pm.expect(jsonData).to.have.property('responseCode');",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"Test 6: [Structure] Contains 'message' field\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        pm.expect(jsonData).to.have.property('message');",
+                  "    }",
+                  "});",
+                  "",
+                  "// ═══════════════════════════════════════",
+                  "// ERROR RESPONSE VALIDATION TESTS",
+                  "// ═══════════════════════════════════════",
+                  "",
+                  "pm.test(\"Test 7: [Error] Response code in body is 405\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        pm.expect(jsonData.responseCode).to.eql(405, \"Response code should be 405\");",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"Test 8: [Error] Message indicates method not supported\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        pm.expect(jsonData.message).to.be.a('string', \"Message should be a string\");",
+                  "        pm.expect(jsonData.message.toLowerCase()).to.include('not supported',",
+                  "            \"Message should indicate method is not supported\");",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"Test 9: [Error] Exact message matches expected text\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        pm.expect(jsonData.message).to.eql('This request method is not supported.',",
+                  "            \"Error message should match exactly\");",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"Test 10: [Error] Response does not contain 'products' array\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        pm.expect(jsonData).to.not.have.property('products',",
+                  "            \"Error response should not contain products\");",
+                  "    }",
+                  "});",
+                  "",
+                  "// ═══════════════════════════════════════",
+                  "// CONSOLE LOGGING",
+                  "// ═══════════════════════════════════════",
+                  "",
+                  "pm.test(\"Test 11: [Console] Log summary to console\", function () {",
+                  "    if (isValidJson) {",
+                  "        console.log(\"═══════════════════════════════════════\");",
+                  "        console.log(\"📊 TEST EXECUTION SUMMARY\");",
+                  "        console.log(\"═══════════════════════════════════════\");",
+                  "        console.log(\"Status Code:\", pm.response.status, pm.response.code);",
+                  "        console.log(\"Response Time:\", pm.response.responseTime + \"ms\");",
+                  "        console.log(\"Content-Type:\", pm.response.headers.get('Content-Type'));",
+                  "        console.log(\"---------------------------------------\");",
+                  "        console.log(\"Response Body Details:\");",
+                  "        console.log(\"Response Code (body):\", jsonData.responseCode);",
+                  "        console.log(\"Message:\", jsonData.message);",
+                  "        console.log(\"Has Products Array:\", jsonData.hasOwnProperty('products') ? \"Yes (Unexpected)\" : \"No (Expected)\");",
+                  "        console.log(\"---------------------------------------\");",
+                  "        console.log(\"Validation Results:\");",
+                  "        console.log(\"✓ Response Code == 405:\", jsonData.responseCode === 405 ? \"PASS\" : \"FAIL\");",
+                  "        console.log(\"✓ Message Matches:\", jsonData.message === 'This request method is not supported.' ? \"PASS\" : \"FAIL\");",
+                  "        console.log(\"═══════════════════════════════════════\");",
+                  "    } else {",
+                  "        console.error(\"❌ Invalid JSON response\");",
+                  "        console.error(\"Status Code:\", pm.response.code);",
+                  "        console.error(\"Response Body:\", pm.response.text());",
+                  "    }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "f766863a-af3c-4789-86d3-7696aa2c74ae",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{BaseURL_WithAPI_Path}}productsList",
+              "host": [
+                "{{BaseURL_WithAPI_Path}}productsList"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC5_POST_To_Search_Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "321b98e1-9f20-452e-b333-39193fbbfa12",
+                "exec": [
+                  "// ===============================================",
+                  "// Test Case 5: POST to Search Product",
+                  "// ===============================================",
+                  "",
+                  "// ═══════════════════════════════════════",
+                  "// PARSE RESPONSE SAFELY",
+                  "// ═══════════════════════════════════════",
+                  "let jsonData;",
+                  "try {",
+                  "    jsonData = pm.response.json();",
+                  "} catch (e) {",
+                  "    console.error(\"Failed to parse JSON:\", e);",
+                  "    jsonData = null;",
+                  "}",
+                  "",
+                  "const isValidJson = jsonData && typeof jsonData === \"object\";",
+                  "const hasProductsArray = isValidJson && Array.isArray(jsonData.products);",
+                  "const products = hasProductsArray ? jsonData.products : [];",
+                  "",
+                  "// ═══════════════════════════════════════",
+                  "// RESPONSE-LEVEL TESTS",
+                  "// ═══════════════════════════════════════",
+                  "",
+                  "pm.test(\"Test 1: [Response] Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Test 2: [Response] Response time is less than 1.5 seconds\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});",
+                  "",
+                  "pm.test(\"Test 3: [Response] Content-Type header exists\", function () {",
+                  "    pm.response.to.have.header('Content-Type');",
+                  "});",
+                  "",
+                  "// ═══════════════════════════════════════",
+                  "// DATA STRUCTURE TESTS",
+                  "// ═══════════════════════════════════════",
+                  "",
+                  "pm.test(\"Test 4: [Structure] Response is valid JSON\", function () {",
+                  "    pm.expect(isValidJson, \"Response body should be valid JSON\").to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"Test 5: [Structure] Response code in body is 200\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        pm.expect(jsonData.responseCode).to.eql(200);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"Test 6: [Structure] Products array exists and not empty\", function () {",
+                  "    pm.expect(hasProductsArray, \"'products' should be an array\").to.be.true;",
+                  "    pm.expect(products.length, \"Products array should not be empty\").to.be.above(0);",
+                  "});",
+                  "",
+                  "// ═══════════════════════════════════════",
+                  "// PRODUCT VALIDATION TESTS",
+                  "// ═══════════════════════════════════════",
+                  "",
+                  "if (hasProductsArray && products.length > 0) {",
+                  "    ",
+                  "    pm.test(\"Test 7: [Products] Each has a unique ID\", function () {",
+                  "        const ids = products.map(p => p.id);",
+                  "        const uniqueIds = new Set(ids);",
+                  "        pm.expect(uniqueIds.size).to.equal(ids.length, ",
+                  "            `Duplicate IDs found. Total: ${ids.length}, Unique: ${uniqueIds.size}`);",
+                  "    });",
+                  "",
+                  "    pm.test(\"Test 8: [Products] Each has valid 'name' field\", function () {",
+                  "        products.forEach(function(product, idx) {",
+                  "            const hasName = Object.prototype.hasOwnProperty.call(product, 'name');",
+                  "            const isValid = hasName && typeof product.name === 'string' && product.name.trim().length > 0;",
+                  "            pm.expect(isValid, `Product[${idx}] has invalid name: ${JSON.stringify(product)}`).to.be.true;",
+                  "        });",
+                  "    });",
+                  "",
+                  "    pm.test(\"Test 9: [Products] Each has valid 'price' field\", function () {",
+                  "        products.forEach(function(product, idx) {",
+                  "            const hasPrice = Object.prototype.hasOwnProperty.call(product, 'price');",
+                  "            const isValid = hasPrice && typeof product.price === 'string' && product.price.trim().length > 0;",
+                  "            pm.expect(isValid, `Product[${idx}] has invalid price: ${JSON.stringify(product)}`).to.be.true;",
+                  "        });",
+                  "    });",
+                  "",
+                  "    pm.test(\"Test 10: [Products] Each price follows format 'Rs. XXX'\", function () {",
+                  "        const pricePattern = /^Rs\\.\\s*\\d+$/;",
+                  "        products.forEach(function(product, idx) {",
+                  "            if (product.price) {",
+                  "                pm.expect(product.price).to.match(pricePattern,",
+                  "                    `Product[${idx}] price format invalid: \"${product.price}\"`);",
+                  "            }",
+                  "        });",
+                  "    });",
+                  "",
+                  "    pm.test(\"Test 11: [Products] Each has valid 'brand' field\", function () {",
+                  "        products.forEach(function(product, idx) {",
+                  "            const hasBrand = Object.prototype.hasOwnProperty.call(product, 'brand');",
+                  "            const isValid = hasBrand && typeof product.brand === 'string' && product.brand.trim().length > 0;",
+                  "            pm.expect(isValid, `Product[${idx}] has invalid brand: ${JSON.stringify(product)}`).to.be.true;",
+                  "        });",
+                  "    });",
+                  "",
+                  "    pm.test(\"Test 12: [Products] Each has valid 'category' object\", function () {",
+                  "        products.forEach(function(product, idx) {",
+                  "            const hasCategory = Object.prototype.hasOwnProperty.call(product, 'category');",
+                  "            const isValid = hasCategory && typeof product.category === 'object' && product.category !== null;",
+                  "            pm.expect(isValid, `Product[${idx}] has invalid category: ${JSON.stringify(product)}`).to.be.true;",
+                  "        });",
+                  "    });",
+                  "",
+                  "    // ═══════════════════════════════════════",
+                  "    // CONSOLE LOGGING",
+                  "    // ═══════════════════════════════════════",
+                  "",
+                  "    pm.test(\"Test 14: [Console] Log summary to console\", function () {",
+                  "        console.log(\"═══════════════════════════════════════\");",
+                  "        console.log(\"📊 TEST EXECUTION SUMMARY\");",
+                  "        console.log(\"═══════════════════════════════════════\");",
+                  "        console.log(\"Total Products Found:\", products.length);",
+                  "        console.log(\"Response Time:\", pm.response.responseTime + \"ms\");",
+                  "        console.log(\"First Product:\", products[0].name);",
+                  "        console.log(\"First Product ID:\", products[0].id);",
+                  "        console.log(\"First Product Category:\", products[0].category.category);",
+                  "        console.log(\"First Product User Type:\", products[0].category.usertype.usertype);",
+                  "        console.log(\"═══════════════════════════════════════\");",
+                  "    });",
+                  "",
+                  "} else {",
+                  "    pm.test(\"Test 15: [Error Handling] No products found or invalid response\", function () {",
+                  "        pm.expect.fail(\"No products found or invalid response structure\");",
+                  "    });",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "5f5acad0-0792-4c9a-a03c-a07cfad24488",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "search_product",
+                  "value": "men",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{BaseURL_WithAPI_Path}}searchProduct",
+              "host": [
+                "{{BaseURL_WithAPI_Path}}searchProduct"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC6_POST_To_Search_WithoutUsing_searchProduct_Parameter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "d856c08c-c48b-475b-8869-b85540dada41",
+                "exec": [
+                  "// ===============================================",
+                  "// Test Case 6: POST to Search Product (Missing Parameter - 400)",
+                  "// ===============================================",
+                  "",
+                  "// ═══════════════════════════════════════",
+                  "// PARSE RESPONSE SAFELY",
+                  "// ═══════════════════════════════════════",
+                  "let jsonData;",
+                  "try {",
+                  "    jsonData = pm.response.json();",
+                  "} catch (e) {",
+                  "    console.error(\"FAILED to parse JSON response:\", e.message);",
+                  "    jsonData = null;",
+                  "}",
+                  "",
+                  "const isValidJson = jsonData && typeof jsonData === \"object\";",
+                  "",
+                  "// ═══════════════════════════════════════",
+                  "// RESPONSE-LEVEL TESTS",
+                  "// ═══════════════════════════════════════",
+                  "",
+                  "pm.test(\"1. HTTP status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"2. Response is valid JSON and not empty\", function () {",
+                  "    pm.expect(pm.response.text(), \"Response body should not be empty\").to.not.be.empty;",
+                  "    pm.expect(isValidJson, \"Response body should be valid JSON\").to.be.true;",
+                  "});",
+                  "",
+                  "// ═══════════════════════════════════════",
+                  "// DATA VALIDATION TESTS",
+                  "// ═══════════════════════════════════════",
+                  "",
+                  "pm.test(\"3. Response body contains 'responseCode' field with value 400\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        pm.expect(jsonData).to.have.property(\"responseCode\", 400);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"4. Response body contains 'message' field with correct value\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        pm.expect(jsonData).to.have.property(",
+                  "            \"message\",",
+                  "            \"Bad request, search_product parameter is missing in POST request.\"",
+                  "        );",
+                  "    }",
+                  "});",
+                  "",
+                  "// ═══════════════════════════════════════",
+                  "// PERFORMANCE TEST",
+                  "// ═══════════════════════════════════════",
+                  "pm.test(\"5. Response time is less than 1000 ms\", function () {",
+                  "    pm.expect(pm.response.responseTime, \"Response time should be less than 1000 ms\").to.be.below(1000);",
+                  "});",
+                  "",
+                  "// ═══════════════════════════════════════",
+                  "// CONSOLE LOGGING",
+                  "// ═══════════════════════════════════════",
+                  "",
+                  "if (isValidJson) {",
+                  "    console.log(\"===============================================\");",
+                  "    console.log(\"  TEST CASE 6: POST TO SEARCH PRODUCT (400)\");",
+                  "    console.log(\"===============================================\");",
+                  "    console.log(\"Response:\", JSON.stringify(jsonData, null, 2));",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "1fe4a63e-95e3-4504-90d7-830760e69f0f",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "{{BaseURL_WithAPI_Path}}searchProduct",
+              "host": [
+                "{{BaseURL_WithAPI_Path}}searchProduct"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "1aa7e7b5-9815-4356-8bce-bdbee7a3370f"
+    },
+    {
+      "name": "Brands",
+      "item": [
+        {
+          "name": "TC3_Get_To_All_BrandsList",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "bc98fac9-2feb-4051-be28-0c64733a5b97",
+                "exec": [
+                  "// ===============================================",
+                  "// Test Case 3: GET To All BrandsLists",
+                  "// ===============================================",
+                  "",
+                  "// Parse JSON safely for reuse",
+                  "let jsonData;",
+                  "try {",
+                  "    jsonData = pm.response.json();",
+                  "} catch (e) {",
+                  "    console.error(\"FAILED to parse JSON response:\", e.message);",
+                  "    jsonData = null;",
+                  "}",
+                  "",
+                  "const isValidJson = jsonData && typeof jsonData === \"object\";",
+                  "",
+                  "// ────────────────────────────────────────────────",
+                  "// RESPONSE-LEVEL TESTS",
+                  "// ────────────────────────────────────────────────",
+                  "",
+                  "pm.test(\"1. Response is valid JSON and not empty\", function () {",
+                  "    pm.expect(pm.response.text(), \"Response body should not be empty\").to.not.be.empty;",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"2. HTTP status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"3. Response time is under 1000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime, \"Response took too long\").to.be.below(1000);",
+                  "});",
+                  "",
+                  "// ────────────────────────────────────────────────",
+                  "// DATA VALIDATION TESTS",
+                  "// ────────────────────────────────────────────────",
+                  "",
+                  "pm.test(\"4. Response body contains 'responseCode' with value 200\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        pm.expect(jsonData).to.have.property(\"responseCode\", 200);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"5. Response body contains a 'brands' array\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        pm.expect(jsonData).to.have.property(\"brands\").that.is.an(\"array\");",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"6. 'brands' array is not empty\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        pm.expect(jsonData.brands.length, \"'brands' array should not be empty\").to.be.above(0);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"7. Each brand has a unique 'id'\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        const ids = new Set();",
+                  "        jsonData.brands.forEach(function (brandObj) {",
+                  "            pm.expect(ids.has(brandObj.id), \"Duplicate brand ID found\").to.be.false;",
+                  "            ids.add(brandObj.id);",
+                  "        });",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"8. Each brand has a 'brand' property\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        jsonData.brands.forEach(function (brandObj) {",
+                  "            pm.expect(brandObj).to.have.property(\"brand\");",
+                  "        });",
+                  "    }",
+                  "});",
+                  "",
+                  "// ────────────────────────────────────────────────",
+                  "// CONSOLE LOGGING",
+                  "// ────────────────────────────────────────────────",
+                  "",
+                  "if (isValidJson) {",
+                  "    console.log(\"===============================================\");",
+                  "    console.log(\"  TEST CASE 3: GET ALL BRANDS (200)\");",
+                  "    console.log(\"===============================================\");",
+                  "    console.log(\"\");",
+                  "    console.log(\"Response Summary:\");",
+                  "    console.log(\"  Status Code:\", pm.response.status, pm.response.code);",
+                  "    console.log(\"  Response Time:\", pm.response.responseTime + \"ms\");",
+                  "    console.log(\"  Content-Type:\", pm.response.headers.get(\"Content-Type\"));",
+                  "    console.log(\"\");",
+                  "    console.log(\"Brands Array Info:\");",
+                  "    console.log(\"  Total Brands:\", jsonData.brands.length);",
+                  "    console.log(\"  Sample Brand:\", jsonData.brands[0]);",
+                  "    console.log(\"\");",
+                  "    console.log(\"Validation Result:\");",
+                  "    console.log(\"  Response Code Correct:\", jsonData.responseCode === 200 ? \"PASS\" : \"FAIL\");",
+                  "    console.log(\"  Brands Exist:\", Array.isArray(jsonData.brands) && jsonData.brands.length > 0 ? \"PASS\" : \"FAIL\");",
+                  "    console.log(\"  Response Time < 1000ms:\", pm.response.responseTime < 1000 ? \"PASS\" : \"FAIL\");",
+                  "    console.log(\"\");",
+                  "    console.log(\"===============================================\");",
+                  "} else {",
+                  "    console.error(\"===============================================\");",
+                  "    console.error(\"CRITICAL: Invalid or empty JSON response\");",
+                  "    console.error(\"===============================================\");",
+                  "    console.error(\"Status Code:\", pm.response.code);",
+                  "    console.error(\"Response Body:\", pm.response.text());",
+                  "    console.error(\"===============================================\");",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "48b1c815-5e3c-473b-a897-5fd1a5e3491c",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BaseURL_WithAPI_Path}}brandsList",
+              "host": [
+                "{{BaseURL_WithAPI_Path}}brandsList"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC4_Put_To_All_BrandsList",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "f9732f13-effd-4e6d-a607-1f5458718701",
+                "exec": [
+                  "// ===============================================",
+                  "// Test Case 4: PUT To All BrandsList",
+                  "// ===============================================",
+                  "",
+                  "// Parse response safely",
+                  "let jsonData;",
+                  "try {",
+                  "    jsonData = pm.response.json();",
+                  "} catch (e) {",
+                  "    console.error(\"FAILED to parse JSON response:\", e.message);",
+                  "    jsonData = null;",
+                  "}",
+                  "",
+                  "const isValidJson = jsonData && typeof jsonData === \"object\";",
+                  "",
+                  "// ===============================================",
+                  "// RESPONSE-LEVEL TESTS",
+                  "// ===============================================",
+                  "",
+                  "pm.test(\"HTTP status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is less than 1 second\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response Content-Type header exists\", function () {",
+                  "    pm.response.to.have.header('Content-Type');",
+                  "});",
+                  "",
+                  "// ===============================================",
+                  "// DATA STRUCTURE TESTS",
+                  "// ===============================================",
+                  "",
+                  "pm.test(\"Response body is valid JSON\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON object\").to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains 'responseCode' field\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        pm.expect(jsonData).to.have.property('responseCode');",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains 'message' field\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        pm.expect(jsonData).to.have.property('message');",
+                  "    }",
+                  "});",
+                  "",
+                  "// ===============================================",
+                  "// ERROR RESPONSE VALIDATION TESTS",
+                  "// ===============================================",
+                  "",
+                  "pm.test(\"Response code in body is 405\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        pm.expect(jsonData.responseCode).to.eql(405, \"Response code should be 405\");",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"Error message indicates method not supported\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        pm.expect(jsonData.message).to.be.a('string', \"Message should be a string\");",
+                  "        pm.expect(jsonData.message.toLowerCase()).to.include('not supported', ",
+                  "            \"Message should indicate method is not supported\");",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"Exact error message matches expected value\", function () {",
+                  "    pm.expect(isValidJson, \"Response should be valid JSON\").to.be.true;",
+                  "    if (isValidJson) {",
+                  "        pm.expect(jsonData.message).to.eql('This request method is not supported.', ",
+                  "            \"Error message should match exactly\");",
+                  "    }",
+                  "});",
+                  "",
+                  "// ===============================================",
+                  "// CONSOLE LOGGING",
+                  "// ===============================================",
+                  "",
+                  "if (isValidJson) {",
+                  "    console.log(\"===============================================\");",
+                  "    console.log(\"  TEST CASE 4: PUT TO ALL BRANDS LIST (405)\");",
+                  "    console.log(\"===============================================\");",
+                  "    console.log(\"\");",
+                  "    console.log(\"Response Summary:\");",
+                  "    console.log(\"  Status Code:\", pm.response.status, pm.response.code);",
+                  "    console.log(\"  Response Time:\", pm.response.responseTime + \"ms\");",
+                  "    console.log(\"  Content-Type:\", pm.response.headers.get('Content-Type'));",
+                  "    console.log(\"\");",
+                  "    console.log(\"Error Response Data:\");",
+                  "    console.log(\"  Response Code (body):\", jsonData.responseCode);",
+                  "    console.log(\"  Error Message:\", jsonData.message);",
+                  "    console.log(\"\");",
+                  "    console.log(\"Validation Result:\");",
+                  "    console.log(\"  Correct Status Code:\", pm.response.code === 405 ? \"PASS\" : \"FAIL\");",
+                  "    console.log(\"  Correct Response Code:\", jsonData.responseCode === 405 ? \"PASS\" : \"FAIL\");",
+                  "    console.log(\"  Correct Error Message:\", jsonData.message === 'This request method is not supported.' ? \"PASS\" : \"FAIL\");",
+                  "    console.log(\"\");",
+                  "    console.log(\"===============================================\");",
+                  "} else {",
+                  "    console.error(\"===============================================\");",
+                  "    console.error(\"CRITICAL: Invalid JSON response\");",
+                  "    console.error(\"===============================================\");",
+                  "    console.error(\"Status Code:\", pm.response.code);",
+                  "    console.error(\"Response Body:\", pm.response.text());",
+                  "    console.error(\"===============================================\");",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "5f38a119-0681-4ba7-9cab-3d43fc953a0f",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{BaseURL_WithAPI_Path}}brandsList",
+              "host": [
+                "{{BaseURL_WithAPI_Path}}brandsList"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "841bebfc-cbb7-4efa-8d1d-f4821d1a6841"
+    },
+    {
+      "name": "Login",
+      "item": [
+        {
+          "name": "TC7_POST_To_VerifyLogin_With_ValidDetails",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "6b2a030f-5077-4a68-8eb6-87577f3a1bca",
+                "exec": [
+                  "// ===============================================\r",
+                  "// Test Case 7: POST To Verify Valid Login\r",
+                  "// ===============================================\r",
+                  "\r",
+                  "// 1. Assert the HTTP status code is 200\r",
+                  "pm.test(\"1. Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// 2. Assert the response time is under 1000ms\r",
+                  "pm.test(\"2. Response time is under 1000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime, \"Response took too long\").to.be.below(1000);\r",
+                  "});\r",
+                  "\r",
+                  "// 3. Assert the response body is valid JSON and not empty\r",
+                  "pm.test(\"3. Response is valid JSON and not empty\", function () {\r",
+                  "    let jsonData;\r",
+                  "    pm.expect(function () {\r",
+                  "        jsonData = pm.response.json();\r",
+                  "    }).to.not.throw();\r",
+                  "    pm.expect(jsonData).to.be.an(\"object\");\r",
+                  "    pm.expect(Object.keys(jsonData).length).to.be.above(0);\r",
+                  "});\r",
+                  "\r",
+                  "// 4. Assert that the response JSON contains a property 'responseCode' with value 200\r",
+                  "pm.test(\"4. Response JSON has 'responseCode' = 200\", function () {\r",
+                  "    const jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property('responseCode', 200);\r",
+                  "});\r",
+                  "\r",
+                  "// 5. Assert that the response JSON contains a property 'message' with value 'User exists!'\r",
+                  "pm.test(\"5. Response JSON has 'message' = 'User exists!'\", function () {\r",
+                  "    const jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property('message', 'User exists!');\r",
+                  "});\r",
+                  "\r",
+                  "// ===============================================\r",
+                  "// Console Logging\r",
+                  "// ===============================================\r",
+                  "try {\r",
+                  "    const jsonData = pm.response.json();\r",
+                  "    console.log(\"===============================================\");\r",
+                  "    console.log(\"  TEST CASE 7: POST TO VERIFY LOGIN (VALID)\");\r",
+                  "    console.log(\"===============================================\");\r",
+                  "    console.log(\"\");\r",
+                  "    console.log(\"Response Summary:\");\r",
+                  "    console.log(\"  Status Code:\", pm.response.status, pm.response.code);\r",
+                  "    console.log(\"  Response Time:\", pm.response.responseTime + \"ms\");\r",
+                  "    console.log(\"  Content-Type:\", pm.response.headers.get('Content-Type'));\r",
+                  "    console.log(\"\");\r",
+                  "    console.log(\"Response Body:\");\r",
+                  "    console.log(\"  responseCode:\", jsonData.responseCode);\r",
+                  "    console.log(\"  message:\", jsonData.message);\r",
+                  "    console.log(\"\");\r",
+                  "    console.log(\"Validation Checks:\");\r",
+                  "    console.log(\"  responseCode == 200:\", jsonData.responseCode === 200 ? \"PASS\" : \"FAIL\");\r",
+                  "    console.log(\"  message == 'User exists!':\", jsonData.message === 'User exists!' ? \"PASS\" : \"FAIL\");\r",
+                  "    console.log(\"\");\r",
+                  "    console.log(\"===============================================\");\r",
+                  "} catch (e) {\r",
+                  "    console.error(\"CRITICAL: Invalid JSON response\");\r",
+                  "    console.error(\"Status Code:\", pm.response.code);\r",
+                  "    console.error(\"Response Body:\", pm.response.text());\r",
+                  "}\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "90a21e74-a59d-44db-ba7c-569109b789b6",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "{{LoginValidEmail}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{LoginValidPassword}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{BaseURL_WithAPI_Path}}verifyLogin",
+              "host": [
+                "{{BaseURL_WithAPI_Path}}verifyLogin"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC8_POST_To_VerifyLogin_Without_EmailParam",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "2399e01b-5d0e-4106-9986-322dfd34de2c",
+                "exec": [
+                  "// ===============================================",
+                  "// Test Case 8: POST To Verify Login Without Email",
+                  "// ===============================================",
+                  "",
+                  "// 1. Assert the HTTP status code is 200",
+                  "pm.test(\"1. Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// 2. Assert the response time is under 1000ms",
+                  "pm.test(\"2. Response time is under 1000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime, \"Response took too long\").to.be.below(1000);",
+                  "});",
+                  "",
+                  "// 3. Assert the response body is valid JSON and not empty",
+                  "pm.test(\"3. Response is valid JSON and not empty\", function () {",
+                  "    let jsonData;",
+                  "    pm.expect(function () {",
+                  "        jsonData = pm.response.json();",
+                  "    }).to.not.throw();",
+                  "    pm.expect(jsonData).to.be.an(\"object\");",
+                  "    pm.expect(Object.keys(jsonData).length).to.be.above(0);",
+                  "});",
+                  "",
+                  "// 4. Assert the JSON contains 'responseCode' property with value 400",
+                  "pm.test(\"4. Response JSON has 'responseCode' = 400\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('responseCode', 400);",
+                  "});",
+                  "",
+                  "// 5. Assert the 'message' property indicates missing email or password",
+                  "pm.test(\"5. Response JSON has 'message' indicating missing email or password\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.message).to.match(/email\\s*or\\s*password.*missing/i);",
+                  "});",
+                  "",
+                  "",
+                  "// ===============================================",
+                  "// Console Logging",
+                  "// ===============================================",
+                  "try {",
+                  "    const jsonData = pm.response.json();",
+                  "    console.log(\"===============================================\");",
+                  "    console.log(\"  TEST CASE 8: POST TO VERIFY LOGIN (INVALID)\");",
+                  "    console.log(\"===============================================\");",
+                  "    console.log(\"\");",
+                  "    console.log(\"Response Summary:\");",
+                  "    console.log(\"  Status Code:\", pm.response.status, pm.response.code);",
+                  "    console.log(\"  Response Time:\", pm.response.responseTime + \"ms\");",
+                  "    console.log(\"  Content-Type:\", pm.response.headers.get('Content-Type'));",
+                  "    console.log(\"\");",
+                  "    console.log(\"Response Body:\");",
+                  "    console.log(\"  responseCode:\", jsonData.responseCode);",
+                  "    console.log(\"  message:\", jsonData.message);",
+                  "    console.log(\"\");",
+                  "    console.log(\"Validation Checks:\");",
+                  "    console.log(\"  responseCode == 400:\", jsonData.responseCode === 400 ? \"PASS\" : \"FAIL\");",
+                  "    console.log(\"  message indicates missing/invalid email:\", /(missing|invalid).*email/i.test(jsonData.message) ? \"PASS\" : \"FAIL\");",
+                  "    console.log(\"\");",
+                  "    console.log(\"===============================================\");",
+                  "} catch (e) {",
+                  "    console.error(\"CRITICAL: Invalid JSON response\");",
+                  "    console.error(\"Status Code:\", pm.response.code);",
+                  "    console.error(\"Response Body:\", pm.response.text());",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "b7b5bf09-38c2-4c30-ab70-8dd3f22dd7aa",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "password",
+                  "value": "{{LoginValidPassword}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{BaseURL_WithAPI_Path}}verifyLogin",
+              "host": [
+                "{{BaseURL_WithAPI_Path}}verifyLogin"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC9_DELETE_To_VerifyLogin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "dc09e0c1-f0da-4664-89aa-192899292d9f",
+                "exec": [
+                  "// ===============================================",
+                  "// Test Case 9: Delete To Verify Login",
+                  "// ===============================================",
+                  "",
+                  "// 1. Assert that the HTTP status code is 200",
+                  "pm.test(\"1. Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// 2. Assert that the response time is under 1000ms",
+                  "pm.test(\"2. Response time is under 1000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime, \"Response took too long\").to.be.below(1000);",
+                  "});",
+                  "",
+                  "// 3. Assert that the response is valid JSON and not empty",
+                  "pm.test(\"3. Response is valid JSON and not empty\", function () {",
+                  "    let jsonData;",
+                  "    pm.expect(function () {",
+                  "        jsonData = pm.response.json();",
+                  "    }).to.not.throw();",
+                  "    pm.expect(jsonData).to.be.an(\"object\");",
+                  "    pm.expect(Object.keys(jsonData).length, \"Response body should not be empty\").to.be.above(0);",
+                  "});",
+                  "",
+                  "// 4. Assert that the response JSON contains 'responseCode' = 405",
+                  "pm.test(\"4. Response JSON has 'responseCode' = 405\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('responseCode', 405);",
+                  "});",
+                  "",
+                  "// 5. Assert that the response JSON contains 'message' = 'This request method is not supported.'",
+                  "pm.test(\"5. Response JSON has 'message' = 'This request method is not supported.'\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message', 'This request method is not supported.');",
+                  "});",
+                  "",
+                  "// ===============================================",
+                  "// Console Logging",
+                  "// ===============================================",
+                  "const jsonData = pm.response.json();",
+                  "",
+                  "console.log(\"===============================================\");",
+                  "console.log(\"  Test Case 9: Delete To Verify Login\");",
+                  "console.log(\"===============================================\");",
+                  "console.log(\"\");",
+                  "console.log(\"Response Summary:\");",
+                  "console.log(\"  Status Code:\", pm.response.status, pm.response.code);",
+                  "console.log(\"  Response Time:\", pm.response.responseTime + \"ms\");",
+                  "console.log(\"  Content-Type:\", pm.response.headers.get('Content-Type'));",
+                  "console.log(\"\");",
+                  "console.log(\"Response Body:\");",
+                  "console.log(\"  responseCode:\", jsonData.responseCode);",
+                  "console.log(\"  message:\", jsonData.message);",
+                  "console.log(\"\");",
+                  "console.log(\"Validation Checks:\");",
+                  "console.log(\"  responseCode == 405:\", jsonData.responseCode === 405 ? \"PASS\" : \"FAIL\");",
+                  "console.log(\"  message == 'This request method is not supported.':\", jsonData.message === 'This request method is not supported.' ? \"PASS\" : \"FAIL\");",
+                  "console.log(\"\");",
+                  "console.log(\"===============================================\");",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "id": "54ae27a0-6cf6-4661-96f4-bfe2f9f76a88",
+              "listen": "prerequest",
+              "script": {
+                "id": "755dbd08-2238-4141-b385-43a7c72315e0",
+                "exec": [
+                  "// Pre-request script for TC9_DELETE_To_VerifyLogin",
+                  "// Log request method, URL, and all variables used in the request to the console",
+                  "console.log('--- Pre-request Script: TC9_DELETE_To_VerifyLogin ---');",
+                  "console.log('Request Method:', pm.request.method);",
+                  "console.log('Request URL:', pm.request.url.toString());",
+                  "",
+                  "// Gather all variables used in the request (environment, collection, globals, local)",
+                  "const usedVariables = [];",
+                  "const variableScopes = ['environment', 'collectionVariables', 'globals', 'variables'];",
+                  "variableScopes.forEach(scope => {",
+                  "    const vars = pm[scope].toObject();",
+                  "    Object.keys(vars).forEach(key => {",
+                  "        usedVariables.push({scope, key, value: vars[key]});",
+                  "    });",
+                  "});",
+                  "console.log('Variables used in request:', usedVariables);",
+                  "console.log('--- End Pre-request Script ---');"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "6226498f-8382-48d3-991d-5e754bb731e6",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{BaseURL_WithAPI_Path}}verifyLogin",
+              "host": [
+                "{{BaseURL_WithAPI_Path}}verifyLogin"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC10_POST_To_VerifyLogin_With_InvalidDetails",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "f8ef37f3-5fe5-42c6-980d-c595b66e2b0a",
+                "exec": [
+                  "// ===============================================\r",
+                  "// Test Case 10: POST To Verify Invalid Login\r",
+                  "// ===============================================\r",
+                  "\r",
+                  "// 1. Assert HTTP status code is 200\r",
+                  "pm.test(\"1. Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// 2. Assert response time is under 1000ms\r",
+                  "pm.test(\"2. Response time is under 1000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime, \"Response took too long\").to.be.below(1000);\r",
+                  "});\r",
+                  "\r",
+                  "// 3. Assert the response body is valid JSON and not empty\r",
+                  "pm.test(\"3. Response is valid JSON and not empty\", function () {\r",
+                  "    let jsonData;\r",
+                  "    pm.expect(function () {\r",
+                  "        jsonData = pm.response.json();\r",
+                  "    }).to.not.throw();\r",
+                  "    pm.expect(jsonData).to.be.an(\"object\").that.is.not.empty;\r",
+                  "});\r",
+                  "\r",
+                  "// 4. Assert that the response JSON contains a property 'responseCode' with value 404\r",
+                  "pm.test(\"4. Response JSON has 'responseCode' = 404\", function () {\r",
+                  "    const jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property('responseCode', 404);\r",
+                  "});\r",
+                  "\r",
+                  "// 5. Assert that the response JSON contains a property 'message' with value 'User not found!'\r",
+                  "pm.test(\"5. Response JSON has 'message' = 'User not found!'\", function () {\r",
+                  "    const jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property('message', 'User not found!');\r",
+                  "});\r",
+                  "\r",
+                  "// 6. Console Logging\r",
+                  "try {\r",
+                  "    const jsonData = pm.response.json();\r",
+                  "    console.log(\"===============================================\");\r",
+                  "    console.log(\"  Test Case 10: POST To Verify Invalid Login\");\r",
+                  "    console.log(\"===============================================\");\r",
+                  "    console.log(\"\");\r",
+                  "    console.log(\"Response Summary:\");\r",
+                  "    console.log(\"  Status Code:\", pm.response.status, pm.response.code);\r",
+                  "    console.log(\"  Response Time:\", pm.response.responseTime + \"ms\");\r",
+                  "    console.log(\"  Content-Type:\", pm.response.headers.get('Content-Type'));\r",
+                  "    console.log(\"\");\r",
+                  "    console.log(\"Response Body:\");\r",
+                  "    console.log(\"  responseCode:\", jsonData.responseCode);\r",
+                  "    console.log(\"  message:\", jsonData.message);\r",
+                  "    console.log(\"\");\r",
+                  "    console.log(\"Validation Checks:\");\r",
+                  "    console.log(\"  responseCode == 404:\", jsonData.responseCode === 404 ? \"PASS\" : \"FAIL\");\r",
+                  "    console.log(\"  message == 'User not found!':\", jsonData.message === 'User not found!' ? \"PASS\" : \"FAIL\");\r",
+                  "    console.log(\"\");\r",
+                  "    console.log(\"===============================================\");\r",
+                  "} catch (e) {\r",
+                  "    console.error(\"CRITICAL: Invalid JSON response\");\r",
+                  "    console.error(\"Status Code:\", pm.response.code);\r",
+                  "    console.error(\"Response Body:\", pm.response.text());\r",
+                  "}\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "8030d6a5-9d03-4b8b-bc9a-f7128dad9e7d",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "{{LoginInvalidEmail}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{LoginInvalidPassword}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{BaseURL_WithAPI_Path}}verifyLogin",
+              "host": [
+                "{{BaseURL_WithAPI_Path}}verifyLogin"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "35cce2ad-2106-46e4-ac67-d2ef8f4e75c2"
+    },
+    {
+      "name": "Account",
+      "item": [
+        {
+          "name": "TC11_POST_To_Create_UserAccount",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// After creating a board, save its ID to the environment for use in update/delete requests",
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.id) {",
+                  "        pm.environment.set('board_ID', jsonData.id);",
+                  "        pm.variables.set('board_ID', jsonData.id); // Also set as local variable for immediate use",
+                  "    }",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "id": "6ad1a3c4-141e-4b0a-882f-5d901b4e6624",
+                "exec": [
+                  "// ===============================================",
+                  "// Test Case 11: POST To Create User Account",
+                  "// ===============================================",
+                  "",
+                  "// 1. Assert HTTP status code is 200 or 201",
+                  "pm.test(\"1. Status code is 200 or 201\", function () {",
+                  "    pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "// 2. Assert response time is under 1000ms",
+                  "pm.test(\"2. Response time is under 1000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime, \"Response took too long\").to.be.below(1000);",
+                  "});",
+                  "",
+                  "// 3. Assert the response body is valid JSON and not empty",
+                  "pm.test(\"3. Response is valid JSON and not empty\", function () {",
+                  "    let jsonData;",
+                  "    pm.expect(function () {",
+                  "        jsonData = pm.response.json();",
+                  "    }).to.not.throw();",
+                  "    pm.expect(jsonData).to.be.an(\"object\").that.is.not.empty;",
+                  "});",
+                  "",
+                  "// 4. Assert that the response JSON contains a property 'responseCode' with value 201",
+                  "pm.test(\"4. Response JSON has 'responseCode' = 201\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('responseCode', 201);",
+                  "});",
+                  "",
+                  "// 5. Assert that the response JSON contains a property 'message' with value 'User created!'",
+                  "pm.test(\"5. Response JSON has 'message' = 'User created!'\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message', 'User created!');",
+                  "});",
+                  "",
+                  "// 6. Console Logging",
+                  "try {",
+                  "    const jsonData = pm.response.json();",
+                  "    console.log(\"===============================================\");",
+                  "    console.log(\"  Test Case 11: POST To Create User Account\");",
+                  "    console.log(\"===============================================\");",
+                  "    console.log(\"\");",
+                  "    console.log(\"Response Summary:\");",
+                  "    console.log(\"  Status Code:\", pm.response.status, pm.response.code);",
+                  "    console.log(\"  Response Time:\", pm.response.responseTime + \"ms\");",
+                  "    console.log(\"  Content-Type:\", pm.response.headers.get('Content-Type'));",
+                  "    console.log(\"\");",
+                  "    console.log(\"Response Body:\");",
+                  "    console.log(\"  responseCode:\", jsonData.responseCode);",
+                  "    console.log(\"  message:\", jsonData.message);",
+                  "    console.log(\"\");",
+                  "    console.log(\"Validation Checks:\");",
+                  "    console.log(\"  responseCode == 201:\", jsonData.responseCode === 201 ? \"PASS\" : \"FAIL\");",
+                  "    console.log(\"  message == 'User created!':\", jsonData.message === 'User created!' ? \"PASS\" : \"FAIL\");",
+                  "    console.log(\"\");",
+                  "    console.log(\"===============================================\");",
+                  "} catch (e) {",
+                  "    console.error(\"CRITICAL: Invalid JSON response\");",
+                  "    console.error(\"Status Code:\", pm.response.code);",
+                  "    console.error(\"Response Body:\", pm.response.text());",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "463a9f14-44db-4b03-87d2-f8e243c2eb6d",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "name",
+                  "value": "omartarek",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "{{Cred_email}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{Cred_password}}",
+                  "type": "text"
+                },
+                {
+                  "key": "title",
+                  "value": "Mr",
+                  "type": "text"
+                },
+                {
+                  "key": "birth_date",
+                  "value": "4",
+                  "type": "text"
+                },
+                {
+                  "key": "birth_month",
+                  "value": "January",
+                  "type": "text"
+                },
+                {
+                  "key": "birth_year",
+                  "value": "2002",
+                  "type": "text"
+                },
+                {
+                  "key": "firstname",
+                  "value": "omar ",
+                  "type": "text"
+                },
+                {
+                  "key": "lastname",
+                  "value": "tarek",
+                  "type": "text"
+                },
+                {
+                  "key": "address1",
+                  "value": "cairo",
+                  "type": "text"
+                },
+                {
+                  "key": "address2",
+                  "value": "cairo",
+                  "type": "text"
+                },
+                {
+                  "key": "country",
+                  "value": "egypt",
+                  "type": "text"
+                },
+                {
+                  "key": "zipcode",
+                  "value": "11511",
+                  "type": "text"
+                },
+                {
+                  "key": "state",
+                  "value": "cairo",
+                  "type": "text"
+                },
+                {
+                  "key": "city",
+                  "value": "cario",
+                  "type": "text"
+                },
+                {
+                  "key": "mobile_number",
+                  "value": "01114934091",
+                  "type": "text"
+                },
+                {
+                  "key": "company",
+                  "value": "VOIS",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{BaseURL_WithAPI_Path}}createAccount",
+              "host": [
+                "{{BaseURL_WithAPI_Path}}createAccount"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC15_POST_To_Create_UserAccount_WithEnrolledEmail",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "d1eeeb26-8b07-4a0c-bb17-1b4e2e60166b",
+                "exec": [
+                  "// Pre-request script: Log method, URL, and all body parameters",
+                  "console.log('Request Method:', pm.request.method);",
+                  "console.log('Request URL:', pm.request.url.toString());",
+                  "",
+                  "if (pm.request.body && pm.request.body.urlencoded) {",
+                  "    let params = {};",
+                  "    pm.request.body.urlencoded.each(function(param) {",
+                  "        if (param && param.key && param.value !== undefined) {",
+                  "            params[param.key] = param.value;",
+                  "        }",
+                  "    });",
+                  "    console.log('Request Body Parameters:', params);",
+                  "} else {",
+                  "    console.log('No URL-encoded body parameters found.');",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "id": "6ad1a3c4-141e-4b0a-882f-5d901b4e6624",
+                "exec": [
+                  "// ===============================================",
+                  "// Test Case 15: POST To Create User Account (Existing Email)",
+                  "// ===============================================",
+                  "",
+                  "// 1. Assert HTTP status code is 200",
+                  "pm.test(\"1. Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// 2. Assert response time is under 1000ms",
+                  "pm.test(\"2. Response time is under 1000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime, \"Response took too long\").to.be.below(1000);",
+                  "});",
+                  "",
+                  "// 3. Assert the response body is valid JSON and not empty",
+                  "pm.test(\"3. Response is valid JSON and not empty\", function () {",
+                  "    let jsonData;",
+                  "    pm.expect(function () {",
+                  "        jsonData = pm.response.json();",
+                  "    }).to.not.throw();",
+                  "    pm.expect(jsonData).to.be.an(\"object\").that.is.not.empty;",
+                  "});",
+                  "",
+                  "// 4. Assert that the response JSON contains a property 'responseCode' with value 400",
+                  "pm.test(\"4. Response JSON has 'responseCode' = 400\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('responseCode', 400);",
+                  "});",
+                  "",
+                  "// 5. Assert that the response JSON contains a property 'message' with value 'Email already exists!'",
+                  "pm.test(\"5. Response JSON has 'message' = 'Email already exists!'\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message', 'Email already exists!');",
+                  "});",
+                  "",
+                  "// 6. Console Logging",
+                  "try {",
+                  "    const jsonData = pm.response.json();",
+                  "    console.log(\"===============================================\");",
+                  "    console.log(\"  Test Case 15: POST To Create User Account (Existing Email)\");",
+                  "    console.log(\"===============================================\");",
+                  "    console.log(\"\");",
+                  "    console.log(\"Response Summary:\");",
+                  "    console.log(\"  Status Code:\", pm.response.status, pm.response.code);",
+                  "    console.log(\"  Response Time:\", pm.response.responseTime + \"ms\");",
+                  "    console.log(\"  Content-Type:\", pm.response.headers.get('Content-Type'));",
+                  "    console.log(\"\");",
+                  "    console.log(\"Response Body:\");",
+                  "    console.log(\"  responseCode:\", jsonData.responseCode);",
+                  "    console.log(\"  message:\", jsonData.message);",
+                  "    console.log(\"\");",
+                  "    console.log(\"Validation Checks:\");",
+                  "    console.log(\"  responseCode == 400:\", jsonData.responseCode === 400 ? \"PASS\" : \"FAIL\");",
+                  "    console.log(\"  message == 'Email already exists!':\", jsonData.message === 'Email already exists!' ? \"PASS\" : \"FAIL\");",
+                  "    console.log(\"\");",
+                  "    console.log(\"===============================================\");",
+                  "} catch (e) {",
+                  "    console.error(\"CRITICAL: Invalid JSON response\");",
+                  "    console.error(\"Status Code:\", pm.response.code);",
+                  "    console.error(\"Response Body:\", pm.response.text());",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "6ff5a519-05aa-490b-9e85-0ea55032954e",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "name",
+                  "value": "omartarek",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "amoriiiii@gmail.com",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "omaramorii",
+                  "type": "text"
+                },
+                {
+                  "key": "title",
+                  "value": "Mr",
+                  "type": "text"
+                },
+                {
+                  "key": "birth_date",
+                  "value": "4",
+                  "type": "text"
+                },
+                {
+                  "key": "birth_month",
+                  "value": "January",
+                  "type": "text"
+                },
+                {
+                  "key": "birth_year",
+                  "value": "2002",
+                  "type": "text"
+                },
+                {
+                  "key": "firstname",
+                  "value": "omar ",
+                  "type": "text"
+                },
+                {
+                  "key": "lastname",
+                  "value": "tarek",
+                  "type": "text"
+                },
+                {
+                  "key": "address1",
+                  "value": "cairo",
+                  "type": "text"
+                },
+                {
+                  "key": "address2",
+                  "value": "cairo",
+                  "type": "text"
+                },
+                {
+                  "key": "country",
+                  "value": "egypt",
+                  "type": "text"
+                },
+                {
+                  "key": "zipcode",
+                  "value": "11511",
+                  "type": "text"
+                },
+                {
+                  "key": "state",
+                  "value": "cairo",
+                  "type": "text"
+                },
+                {
+                  "key": "city",
+                  "value": "cario",
+                  "type": "text"
+                },
+                {
+                  "key": "mobile_number",
+                  "value": "01114934091",
+                  "type": "text"
+                },
+                {
+                  "key": "company",
+                  "value": "VOIS",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{BaseURL_WithAPI_Path}}createAccount",
+              "host": [
+                "{{BaseURL_WithAPI_Path}}createAccount"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC13_Put_To_UpdateUserAccount",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "a83de026-b07c-41eb-978e-f61838828ea1",
+                "exec": [
+                  "// ===============================================",
+                  "// Test Case 12: PUT To Update User Account",
+                  "// ===============================================",
+                  "",
+                  "// 1. Assert HTTP status code is 200",
+                  "pm.test(\"1. Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// 2. Assert response time is under 1000ms",
+                  "pm.test(\"2. Response time is under 1000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime, \"Response took too long\").to.be.below(1000);",
+                  "});",
+                  "",
+                  "// 3. Assert the response body is valid JSON and not empty",
+                  "pm.test(\"3. Response is valid JSON and not empty\", function () {",
+                  "    let jsonData;",
+                  "    pm.expect(function () {",
+                  "        jsonData = pm.response.json();",
+                  "    }).to.not.throw();",
+                  "    pm.expect(jsonData).to.be.an(\"object\").that.is.not.empty;",
+                  "});",
+                  "",
+                  "// 4. Assert that the response JSON contains a property 'responseCode' with value 200",
+                  "pm.test(\"4. Response JSON has 'responseCode' = 200\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"responseCode\", 200);",
+                  "});",
+                  "",
+                  "// 5. Assert that the response JSON contains a property 'message' with value 'User updated!'",
+                  "pm.test(\"5. Response JSON has 'message' = 'User updated!'\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"message\", \"User updated!\");",
+                  "});",
+                  "",
+                  "// 6. Console Logging",
+                  "try {",
+                  "    const jsonData = pm.response.json();",
+                  "    console.log(\"===============================================\");",
+                  "    console.log(\"  Test Case 12: PUT To Update User Account\");",
+                  "    console.log(\"===============================================\");",
+                  "    console.log(\"\");",
+                  "    console.log(\"Response Summary:\");",
+                  "    console.log(\"  Status Code:\", pm.response.status, pm.response.code);",
+                  "    console.log(\"  Response Time:\", pm.response.responseTime + \"ms\");",
+                  "    console.log(\"  Content-Type:\", pm.response.headers.get(\"Content-Type\"));",
+                  "    console.log(\"\");",
+                  "    console.log(\"Response Body:\");",
+                  "    console.log(\"  responseCode:\", jsonData.responseCode);",
+                  "    console.log(\"  message:\", jsonData.message);",
+                  "    console.log(\"\");",
+                  "    console.log(\"Validation Checks:\");",
+                  "    console.log(\"  responseCode == 200:\", jsonData.responseCode === 200 ? \"PASS\" : \"FAIL\");",
+                  "    console.log(\"  message == 'User updated!':\", jsonData.message === \"User updated!\" ? \"PASS\" : \"FAIL\");",
+                  "    console.log(\"\");",
+                  "    console.log(\"===============================================\");",
+                  "} catch (e) {",
+                  "    console.error(\"CRITICAL: Invalid JSON response\");",
+                  "    console.error(\"Status Code:\", pm.response.code);",
+                  "    console.error(\"Response Body:\", pm.response.text());",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "92d449db-f05a-47c0-9907-4be6a4cdfe16",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "name",
+                  "value": "amortarekk",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{Cred_password}}",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "{{Cred_email}}",
+                  "type": "text"
+                },
+                {
+                  "key": "title",
+                  "value": "Mr",
+                  "type": "text"
+                },
+                {
+                  "key": "birth_date",
+                  "value": "5",
+                  "type": "text"
+                },
+                {
+                  "key": "birth_month",
+                  "value": "9",
+                  "type": "text"
+                },
+                {
+                  "key": "birth_year",
+                  "value": "2000",
+                  "type": "text"
+                },
+                {
+                  "key": "firstname",
+                  "value": "amor",
+                  "type": "text"
+                },
+                {
+                  "key": "lastname",
+                  "value": "tarek",
+                  "type": "text"
+                },
+                {
+                  "key": "company",
+                  "value": "Vois",
+                  "type": "text"
+                },
+                {
+                  "key": "address1",
+                  "value": "new cairo",
+                  "type": "text"
+                },
+                {
+                  "key": "address2",
+                  "value": "shoubra",
+                  "type": "text"
+                },
+                {
+                  "key": "country",
+                  "value": "egypt",
+                  "type": "text"
+                },
+                {
+                  "key": "zipcode",
+                  "value": "11111",
+                  "type": "text"
+                },
+                {
+                  "key": "state",
+                  "value": "newcairo",
+                  "type": "text"
+                },
+                {
+                  "key": "city",
+                  "value": "cairo",
+                  "type": "text"
+                },
+                {
+                  "key": "mobile_number",
+                  "value": "0123456789",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{BaseURL_WithAPI_Path}}updateAccount",
+              "host": [
+                "{{BaseURL_WithAPI_Path}}updateAccount"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC12_DELETE_UserAccount",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "1e360d6a-d976-4b3a-80e8-9a2ece9d1db1",
+                "exec": [
+                  "// ===============================================\r",
+                  "// Test Case 12: DELETE User Account\r",
+                  "// ===============================================\r",
+                  "\r",
+                  "// 1. Assert HTTP status code is 200\r",
+                  "pm.test(\"1. Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// 2. Assert response time is under 1000ms\r",
+                  "pm.test(\"2. Response time is under 1000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime, \"Response took too long\").to.be.below(1000);\r",
+                  "});\r",
+                  "\r",
+                  "// 3. Assert the response body is valid JSON and not empty\r",
+                  "pm.test(\"3. Response is valid JSON and not empty\", function () {\r",
+                  "    let jsonData;\r",
+                  "    pm.expect(function () {\r",
+                  "        jsonData = pm.response.json();\r",
+                  "    }).to.not.throw();\r",
+                  "    pm.expect(jsonData).to.be.an(\"object\").that.is.not.empty;\r",
+                  "});\r",
+                  "\r",
+                  "// 4. Assert that the response JSON contains a property 'responseCode' with value 200\r",
+                  "pm.test(\"4. Response JSON has 'responseCode' = 200\", function () {\r",
+                  "    const jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property('responseCode', 200);\r",
+                  "});\r",
+                  "\r",
+                  "// 5. Assert that the response JSON contains a property 'message' with value 'Account deleted!'\r",
+                  "pm.test(\"5. Response JSON has 'message' = 'Account deleted!'\", function () {\r",
+                  "    const jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.have.property('message', 'Account deleted!');\r",
+                  "});\r",
+                  "\r",
+                  "// 7. Console Logging\r",
+                  "try {\r",
+                  "    const jsonData = pm.response.json();\r",
+                  "    console.log(\"===============================================\");\r",
+                  "    console.log(\"  Test Case 12: DELETE User Account\");\r",
+                  "    console.log(\"===============================================\");\r",
+                  "    console.log(\"\");\r",
+                  "    console.log(\"Response Summary:\");\r",
+                  "    console.log(\"  Status Code:\", pm.response.status, pm.response.code);\r",
+                  "    console.log(\"  Response Time:\", pm.response.responseTime + \"ms\");\r",
+                  "    console.log(\"  Content-Type:\", pm.response.headers.get('Content-Type'));\r",
+                  "    console.log(\"\");\r",
+                  "    console.log(\"Response Body:\");\r",
+                  "    console.log(\"  responseCode:\", jsonData.responseCode);\r",
+                  "    console.log(\"  message:\", jsonData.message);\r",
+                  "    console.log(\"\");\r",
+                  "    console.log(\"Validation Checks:\");\r",
+                  "    console.log(\"  responseCode == 200:\", jsonData.responseCode === 200 ? \"PASS\" : \"FAIL\");\r",
+                  "    console.log(\"  message == 'Account deleted!':\", jsonData.message === 'Account deleted!' ? \"PASS\" : \"FAIL\");\r",
+                  "    console.log(\"  Content-Type includes 'application/json':\", pm.response.headers.get('Content-Type').includes('application/json') ? \"PASS\" : \"FAIL\");\r",
+                  "    console.log(\"\");\r",
+                  "    console.log(\"===============================================\");\r",
+                  "} catch (e) {\r",
+                  "    console.error(\"CRITICAL: Invalid JSON response\");\r",
+                  "    console.error(\"Status Code:\", pm.response.code);\r",
+                  "    console.error(\"Response Body:\", pm.response.text());\r",
+                  "}\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "a7305f2b-f3a6-41ae-af31-8bcfe323d49b",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "{{Cred_email}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{Cred_password}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{BaseURL_WithAPI_Path}}deleteAccount",
+              "host": [
+                "{{BaseURL_WithAPI_Path}}deleteAccount"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC14_Get_UserAccountDetails_ByEmail",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "016e743d-cf04-4c49-8b08-e31f6e2e687c",
+                "exec": [
+                  "// ===============================================",
+                  "// Test Case 14: GET User Account Details By Email",
+                  "// ===============================================",
+                  "",
+                  "// 1. Assert response time is under 1000ms",
+                  "pm.test(\"1. Response time is under 1000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime, \"Response took too long\").to.be.below(1000);",
+                  "});",
+                  "",
+                  "// 2. Assert HTTP status code is 200 or 201",
+                  "pm.test(\"2. Status code is 200 or 201\", function () {",
+                  "    pm.expect([200, 201], \"Unexpected status code\").to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "// 3. Assert response body is valid JSON and not empty",
+                  "pm.test(\"3. Response body is valid JSON and not empty\", function () {",
+                  "    let jsonData;",
+                  "    pm.expect(function () {",
+                  "        jsonData = pm.response.json();",
+                  "    }).to.not.throw();",
+                  "    pm.expect(jsonData).to.be.an(\"object\").that.is.not.empty;",
+                  "});",
+                  "",
+                  "// 4. Assert response contains 'responseCode' = 200",
+                  "pm.test(\"4. Response JSON has 'responseCode' = 200\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('responseCode', 200);",
+                  "});",
+                  "",
+                  "// 5. Assert 'user.email' matches the requested email",
+                  "pm.test(\"5. Response contains 'user.email' matching requested email\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const requestedEmail = pm.variables.get(\"LoginValidEmail\");",
+                  "    pm.expect(jsonData).to.have.property(\"user\");",
+                  "    pm.expect(jsonData.user).to.have.property(\"email\", requestedEmail);",
+                  "});",
+                  "",
+                  "// 6. Assert 'user.name' is 'omar tarek ibrahim sayed'",
+                  "pm.test(\"6. Response contains 'user.name' as 'omar tarek ibrahim sayed'\", function () {",
+                  "    try {",
+                  "        const jsonData = pm.response.json();",
+                  "        const expectedName = pm.variables.get(\"LoginValidName\");",
+                  "        pm.expect(jsonData).to.have.nested.property(\"user.name\", expectedName);",
+                  "    } catch (err) {",
+                  "        pm.expect.fail(\"Error parsing response JSON or missing property: \" + err.message);",
+                  "    }",
+                  "});",
+                  "",
+                  "// 7. Console Logging Summary",
+                  "try {",
+                  "    const jsonData = pm.response.json();",
+                  "    console.log(\"===============================================\");",
+                  "    console.log(\"  Test Case 14: GET User Account Details By Email\");",
+                  "    console.log(\"===============================================\");",
+                  "    console.log(\"\");",
+                  "    console.log(\"Response Summary:\");",
+                  "    console.log(\"  Status Code:\", pm.response.status, pm.response.code);",
+                  "    console.log(\"  Response Time:\", pm.response.responseTime + \"ms\");",
+                  "    console.log(\"  Content-Type:\", pm.response.headers.get('Content-Type'));",
+                  "    console.log(\"  User Name:\", jsonData.user && jsonData.user.name);",
+                  "    console.log(\"  User Email:\", jsonData.user && jsonData.user.email);",
+                  "    console.log(\"\");",
+                  "} catch (err) {",
+                  "    console.log(\"Error logging response summary:\", err.message);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "id": "738916b9-6b07-4717-87e8-a380e12ca7b3",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "{{BaseURL_WithAPI_Path}}getUserDetailByEmail?email={{LoginValidEmail}}",
+              "host": [
+                "{{BaseURL_WithAPI_Path}}getUserDetailByEmail"
+              ],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "{{LoginValidEmail}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "16bdbdb6-cb71-49aa-b515-6d50d78f56b7"
+    }
+  ],
+  "variable": [
+    {
+      "id": "b8a3e31e-49f4-40a5-a794-b475919bfc91",
+      "key": "baseURL",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "id": "28d68f3b-2dc2-4cf6-ba12-3b3c6ed785b0",
+      "key": "lastResponseBody",
+      "value": ""
+    }
+  ]
+}

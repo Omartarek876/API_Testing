@@ -1,0 +1,1156 @@
+{
+  "info": {
+    "_postman_id": "4227aca2-40ef-4842-8b12-e2ebb09222e0",
+    "name": "GS_API_Testing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create_Board",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "id": "a8f964a5-75bb-4316-a390-a0d9a075c7c4",
+            "exec": [
+              "// List of variables to keep",
+              "const keepVars = [",
+              "    \"idMember\",",
+              "    \"addedMember_Type\",",
+              "    \"addedMember_Username\",",
+              "    \"addedMember_Fullname\",",
+              "    \"allowBillableGuest\"",
+              "];",
+              "",
+              "// All collection variables",
+              "const allVars = [",
+              "    \"idMember\",",
+              "    \"addedMember_Type\",",
+              "    \"addedMember_Username\",",
+              "    \"addedMember_Fullname\",",
+              "    \"allowBillableGuest\",",
+              "    \"board_Name\",",
+              "    \"defaultLabels\",",
+              "    \"defaultLists\",",
+              "    \"boardDesc\",",
+              "    \"idOrganization\",",
+              "    \"keepFromSource\",",
+              "    \"powerUps\",",
+              "    \"prefs_permissionLevel\",",
+              "    \"prefs_voting\",",
+              "    \"prefs_comments\",",
+              "    \"prefs_invitations\",",
+              "    \"prefs_selfJoin\",",
+              "    \"prefs_cardCovers\",",
+              "    \"prefs_background\",",
+              "    \"prefs_cardAging\",",
+              "    \"closed\",",
+              "    \"subscribed\",",
+              "    \"permissionLevel\",",
+              "    \"selfJoin\",",
+              "    \"cardCovers\",",
+              "    \"hideVotes\",",
+              "    \"invitations\",",
+              "    \"voting\",",
+              "    \"comments\",",
+              "    \"background\",",
+              "    \"cardAging\",",
+              "    \"calendarFeedEnabled\"",
+              "];",
+              "",
+              "// Unset all variables except those in keepVars",
+              "allVars.forEach(function(varName) {",
+              "    if (!keepVars.includes(varName)) {",
+              "        pm.collectionVariables.unset(varName);",
+              "    }",
+              "});",
+              "",
+              "",
+              "",
+              "// -----------------------------",
+              "// Pre-request: Set input variables into Collection Variables",
+              "// -----------------------------",
+              "",
+              "// --- Board info ---",
+              "pm.collectionVariables.set('board_Name', 'repeated');",
+              "pm.collectionVariables.set('boardDesc', 'This is a test board description');",
+              "pm.collectionVariables.set('idOrganization', '691caab0af00b5fe67655b6c'); // Org ID",
+              "",
+              "// --- Board options ---",
+              "pm.collectionVariables.set('defaultLabels', 'true'); // true or false",
+              "pm.collectionVariables.set('defaultLists', 'true'); // true or false",
+              "pm.collectionVariables.set('keepFromSource', 'cards,lists'); // Comma-separated",
+              "pm.collectionVariables.set('powerUps', 'calendar,vote'); // Comma-separated list",
+              "",
+              "// --- Board preferences ---",
+              "pm.collectionVariables.set('prefs_permissionLevel', 'private'); // private, org, public",
+              "pm.collectionVariables.set('prefs_voting', 'observers'); // disabled, members, observers, org, public",
+              "pm.collectionVariables.set('prefs_comments', 'disabled'); // disabled, members, observers, org, public",
+              "pm.collectionVariables.set('prefs_invitations', 'members'); // members, admins",
+              "pm.collectionVariables.set('prefs_selfJoin', 'true'); // string boolean",
+              "pm.collectionVariables.set('prefs_cardCovers', 'false'); // string boolean",
+              "pm.collectionVariables.set('prefs_background', 'orange'); // color or custom ID",
+              "pm.collectionVariables.set('prefs_cardAging', 'regular'); // regular, pirate",
+              "",
+              "console.log(\"All collection variables for Create Board are set successfully.\");",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "id": "676a0816-f39c-45a4-9753-5b69b2911770",
+            "exec": [
+              "// -----------------------------",
+              "// Robust Tests for Create Board with Detailed Titles",
+              "// -----------------------------",
+              "",
+              "// Helper function to safely parse JSON",
+              "function safeJsonParse(resp) {",
+              "    try {",
+              "        return JSON.parse(resp);",
+              "    } catch (e) {",
+              "        console.error(\"Failed to parse JSON:\", e);",
+              "        return null;",
+              "    }",
+              "}",
+              "",
+              "let jsonData = safeJsonParse(pm.response.text());",
+              "",
+              "// --- Status Code Test ---",
+              "pm.test(\"[Positive][Status Code] Should return 200 or 201 indicating board creation success\", function() {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              "",
+              "// If response is not JSON, skip further checks",
+              "if (!jsonData) {",
+              "    console.warn(\"Response body is not valid JSON, skipping further tests.\");",
+              "    pm.test(\"[Negative][Response Format] Response should be valid JSON\", function() {",
+              "        pm.expect.fail(\"Response body is not valid JSON\");",
+              "    });",
+              "} else {",
+              "",
+              "    // --- Validate 'id' field and save as collection variable ---",
+              "    pm.test(\"[Positive][Field: id] Response should contain a non-empty 'id' representing the board unique identifier\", function() {",
+              "        pm.expect(jsonData).to.have.property(\"id\");",
+              "        pm.expect(jsonData.id).to.be.a(\"string\").and.to.not.be.empty;",
+              "    });",
+              "",
+              "    if (jsonData.id) {",
+              "        pm.environment.set(\"board_ID\", jsonData.id);",
+              "        console.log(\"Saved board_ID to environment variable:\", jsonData.id);",
+              "        pm.test(\"[Info][environment Variable] 'board_ID' successfully saved to environment variables\", function() {",
+              "            pm.expect(pm.environment.get(\"board_ID\")).to.eql(jsonData.id);",
+              "        });",
+              "    }",
+              "",
+              "    // --- Validate main board fields ---",
+              "    const expectedFields = [\"name\", \"desc\", \"idOrganization\", \"prefs\"];",
+              "    expectedFields.forEach(field => {",
+              "        pm.test(`[Positive][Field Presence] Response should contain the '${field}' field`, function() {",
+              "            pm.expect(jsonData).to.have.property(field);",
+              "        });",
+              "    });",
+              "",
+              "    // --- Validate prefs object and individual preference fields ---",
+              "    if (jsonData.prefs && typeof jsonData.prefs === \"object\") {",
+              "        const prefsFields = [",
+              "            \"permissionLevel\",\"selfJoin\",\"cardCovers\",\"invitations\",\"voting\",\"comments\",\"background\",\"cardAging\"",
+              "        ];",
+              "        prefsFields.forEach(pref => {",
+              "            const expected = pm.collectionVariables.get(`prefs_${pref}`);",
+              "            if (expected !== undefined) {",
+              "                pm.test(`[Positive][Preference: prefs.${pref}] Response should match collection variable value '${expected}'`, function() {",
+              "                    const actual = jsonData.prefs[pref];",
+              "                    pm.expect(String(actual)).to.eql(String(expected));",
+              "                });",
+              "            }",
+              "        });",
+              "    }",
+              "}",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "id": "2e4debbf-5a9e-4659-b3d0-96949fb7a182",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "url": {
+          "raw": "{{BaseUrl}}?name={{board_Name}}&defaultLabels={{defaultLabels}}&defaultLists={{defaultLists}}&desc={{boardDesc}}&idOrganization={{idOrganization}}&keepFromSource={{keepFromSource}}&powerUps={{powerUps}}&prefs_permissionLevel={{prefs_permissionLevel}}&prefs_voting={{prefs_voting}}&prefs_comments={{prefs_comments}}&prefs_invitations={{prefs_invitations}}&prefs_selfJoin={{prefs_selfJoin}}&prefs_cardCovers={{prefs_cardCovers}}&prefs_background={{prefs_background}}&prefs_cardAging={{prefs_cardAging}}&key={{API_key}}&token={{token}}",
+          "host": [
+            "{{BaseUrl}}"
+          ],
+          "query": [
+            {
+              "key": "name",
+              "value": "{{board_Name}}"
+            },
+            {
+              "key": "defaultLabels",
+              "value": "{{defaultLabels}}"
+            },
+            {
+              "key": "defaultLists",
+              "value": "{{defaultLists}}"
+            },
+            {
+              "key": "desc",
+              "value": "{{boardDesc}}"
+            },
+            {
+              "key": "idOrganization",
+              "value": "{{idOrganization}}"
+            },
+            {
+              "key": "keepFromSource",
+              "value": "{{keepFromSource}}"
+            },
+            {
+              "key": "powerUps",
+              "value": "{{powerUps}}"
+            },
+            {
+              "key": "prefs_permissionLevel",
+              "value": "{{prefs_permissionLevel}}"
+            },
+            {
+              "key": "prefs_voting",
+              "value": "{{prefs_voting}}"
+            },
+            {
+              "key": "prefs_comments",
+              "value": "{{prefs_comments}}"
+            },
+            {
+              "key": "prefs_invitations",
+              "value": "{{prefs_invitations}}"
+            },
+            {
+              "key": "prefs_selfJoin",
+              "value": "{{prefs_selfJoin}}"
+            },
+            {
+              "key": "prefs_cardCovers",
+              "value": "{{prefs_cardCovers}}"
+            },
+            {
+              "key": "prefs_background",
+              "value": "{{prefs_background}}"
+            },
+            {
+              "key": "prefs_cardAging",
+              "value": "{{prefs_cardAging}}"
+            },
+            {
+              "key": "key",
+              "value": "{{API_key}}"
+            },
+            {
+              "key": "token",
+              "value": "{{token}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Update_Board",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "id": "c9b0beff-18bc-4752-8579-161f7e5e6678",
+            "exec": [
+              "// --- Ensure boolean values are strings for Trello ---",
+              "pm.collectionVariables.set('closed', 'false');",
+              "",
+              "// --- Board info ---",
+              "pm.collectionVariables.set('board_Name', 'new');",
+              "pm.collectionVariables.set('boardDesc', 'This is a test board2 description');",
+              "pm.collectionVariables.set('idOrganization', '691caab0af00b5fe67655b6c');",
+              "",
+              "// --- Board prefs (only those that can be set and tested) ---",
+              "pm.collectionVariables.set('permissionLevel', 'private');",
+              "pm.collectionVariables.set('selfJoin', 'true');",
+              "pm.collectionVariables.set('invitations', 'members');",
+              "pm.collectionVariables.set('comments', 'disabled');",
+              "pm.collectionVariables.set('cardAging', 'regular');",
+              "pm.collectionVariables.set('calendarFeedEnabled', 'false');",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "id": "28d1e6b2-1020-4977-bfbb-f76dcdd2d5f5",
+            "exec": [
+              "// --- General Tests ---",
+              "pm.test(\"[GENERAL] Status code is present\", function () {",
+              "    pm.expect(pm.response.code).to.be.a('number');",
+              "});",
+              "pm.test(\"[GENERAL] Response time is less than 2000ms\", function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "});",
+              "",
+              "let jsonData = {};",
+              "let isJson = true;",
+              "try {",
+              "    jsonData = pm.response.json();",
+              "} catch (e) {",
+              "    isJson = false;",
+              "}",
+              "pm.test(\"[GENERAL] Response body is valid JSON\", function () {",
+              "    pm.expect(isJson, \"Response is not valid JSON\").to.be.true;",
+              "});",
+              "",
+              "if (pm.response.code === 200) {",
+              "    // --- Positive Tests ---",
+              "    // Top-level fields",
+              "    const fields = [",
+              "        { key: 'id', variable: null },",
+              "        { key: 'name', variable: 'board_Name' },",
+              "        { key: 'desc', variable: 'boardDesc' },",
+              "        { key: 'closed', variable: 'closed' },",
+              "        { key: 'idOrganization', variable: 'idOrganization' },",
+              "    ];",
+              "    fields.forEach(field => {",
+              "        pm.test(`[POSITIVE][Field Presence] Response contains '${field.key}'`, function () {",
+              "            pm.expect(jsonData).to.have.property(field.key);",
+              "        });",
+              "        if (field.variable) {",
+              "            pm.test(`[POSITIVE][Field Match] '${field.key}' matches collection variable '${field.variable}'`, function () {",
+              "                let expected = pm.collectionVariables.get(field.variable);",
+              "                let actual = jsonData[field.key];",
+              "                // Convert booleans if needed",
+              "                if (typeof actual === 'boolean') {",
+              "                    expected = expected === 'true';",
+              "                }",
+              "                pm.expect(actual).to.eql(expected);",
+              "            });",
+              "        }",
+              "    });",
+              "    // prefs fields (only those that can be set)",
+              "    const prefsFields = [",
+              "        { key: 'permissionLevel', variable: 'permissionLevel' },",
+              "        { key: 'selfJoin', variable: 'selfJoin' },",
+              "        { key: 'invitations', variable: 'invitations' },",
+              "        { key: 'comments', variable: 'comments' },",
+              "        { key: 'cardAging', variable: 'cardAging' },",
+              "        { key: 'calendarFeedEnabled', variable: 'calendarFeedEnabled' },",
+              "    ];",
+              "    pm.test(\"[POSITIVE][Field Presence] Response contains 'prefs'\", function () {",
+              "        pm.expect(jsonData).to.have.property('prefs');",
+              "    });",
+              "    prefsFields.forEach(field => {",
+              "        pm.test(`[POSITIVE][Prefs Presence] prefs contains '${field.key}'`, function () {",
+              "            pm.expect(jsonData.prefs).to.have.property(field.key);",
+              "        });",
+              "        pm.test(`[POSITIVE][Prefs Match] prefs.'${field.key}' matches collection variable '${field.variable}'`, function () {",
+              "            let expected = pm.collectionVariables.get(field.variable);",
+              "            let actual = jsonData.prefs[field.key];",
+              "            // Convert booleans if needed",
+              "            if (typeof actual === 'boolean') {",
+              "                expected = expected === 'true';",
+              "            }",
+              "            pm.expect(actual).to.eql(expected);",
+              "        });",
+              "    });",
+              "} else {",
+              "    // --- Negative Tests ---",
+              "    pm.test(\"[NEGATIVE][Status Code] Should be 400 or 4xx for error\", function () {",
+              "        pm.expect(pm.response.code).to.be.within(400,499);",
+              "    });",
+              "    let errorMsg = '';",
+              "    try {",
+              "        errorMsg = (jsonData.message || jsonData.error || jsonData.msg || '').toLowerCase();",
+              "    } catch (e) {",
+              "        errorMsg = '';",
+              "    }",
+              "    pm.test(\"[NEGATIVE][Error Message] Should mention 'invalid' or 'error'\", function () {",
+              "        pm.expect(errorMsg).to.satisfy(function(msg) {",
+              "            return msg.includes('invalid') || msg.includes('error');",
+              "        });",
+              "    });",
+              "}",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "id": "a973e6b4-8c27-44dc-b03b-2b8bfdef8f3d",
+      "request": {
+        "method": "PUT",
+        "url": {
+          "raw": "{{BaseUrl}}{{board_ID}}?key={{API_key}}&token={{token}}&name={{board_Name}}&desc={{boardDesc}}&idOrganization={{idOrganization}}",
+          "host": [
+            "{{BaseUrl}}{{board_ID}}"
+          ],
+          "query": [
+            {
+              "key": "key",
+              "value": "{{API_key}}"
+            },
+            {
+              "key": "token",
+              "value": "{{token}}"
+            },
+            {
+              "key": "name",
+              "value": "{{board_Name}}"
+            },
+            {
+              "key": "desc",
+              "value": "{{boardDesc}}"
+            },
+            {
+              "key": "idOrganization",
+              "value": "{{idOrganization}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Add_Member_To_The_Board",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "fc195c05-41c3-4fff-b568-4ed0009c2e3d",
+            "exec": [
+              "// Refactored Post-response Tests for Add_Member_To_The_Board",
+              "// Defensive, clear, and robust",
+              "",
+              "// 1. Defensive JSON parse",
+              "function safeJsonParse(resp) {",
+              "    try { return JSON.parse(resp); } ",
+              "    catch (e) { return null; }",
+              "}",
+              "",
+              "const jsonData = safeJsonParse(pm.response.text());",
+              "",
+              "// 2. Basic response checks",
+              "pm.test(\"[Performance] Response time is under 2000ms\", function () {",
+              "    pm.expect(pm.response.responseTime, \"Response time exceeded 2000ms\").to.be.below(2000);",
+              "});",
+              "",
+              "pm.test(\"[Status] Status code is 200\", function () {",
+              "    pm.expect(pm.response.code, \"Expected status code 200\").to.eql(200);",
+              "});",
+              "",
+              "pm.test(\"[Header] Content-Type is application/json\", function () {",
+              "    pm.response.to.have.header(\"Content-Type\");",
+              "    const contentType = pm.response.headers.get(\"Content-Type\");",
+              "    pm.expect(contentType, \"Content-Type should include 'application/json'\").to.include(\"application/json\");",
+              "});",
+              "",
+              "pm.test(\"[Body] Response is valid JSON\", function () {",
+              "    pm.expect(jsonData, \"Response body is not valid JSON\").to.not.be.null;",
+              "});",
+              "",
+              "// 3. Ensure 'members' array exists",
+              "pm.test(\"[Body] Response contains 'members' array\", function () {",
+              "    pm.expect(jsonData, \"Response body is empty\").to.exist;",
+              "    pm.expect(jsonData).to.have.property(\"members\");",
+              "    pm.expect(Array.isArray(jsonData.members), \"'members' is not an array\").to.be.true;",
+              "});",
+              "",
+              "// 4. Find member by id",
+              "function findMemberById(members, id) {",
+              "    if (!Array.isArray(members)) return undefined;",
+              "    return members.find(function(m) { return m && m.id === id; });",
+              "}",
+              "",
+              "const idMember = pm.collectionVariables.get(\"idMember\");",
+              "const expectedFullName = pm.collectionVariables.get(\"addedMember_Fullname\");",
+              "const expectedUsername = pm.collectionVariables.get(\"addedMember_Username\");",
+              "",
+              "pm.test(\"[Body] Member with id 'idMember' exists in 'members' array\", function () {",
+              "    pm.expect(idMember, \"Collection variable 'idMember' is not set\").to.exist;",
+              "    pm.expect(jsonData && Array.isArray(jsonData.members), \"'members' array missing\").to.be.true;",
+              "    const foundMember = findMemberById(jsonData.members, idMember);",
+              "    pm.expect(foundMember, `Member with id '${idMember}' not found in 'members' array`).to.exist;",
+              "});",
+              "",
+              "pm.test(\"[Body] Member's 'fullName' matches collection variable\", function () {",
+              "    const foundMember = findMemberById(jsonData && jsonData.members, idMember);",
+              "    pm.expect(foundMember, `Member with id '${idMember}' not found`).to.exist;",
+              "    pm.expect(expectedFullName, \"Collection variable 'addedMember_FullName' is not set\").to.exist;",
+              "    if (foundMember && expectedFullName) {",
+              "        pm.expect(foundMember.fullName, `Expected fullName '${expectedFullName}', got '${foundMember.fullName}'`).to.eql(expectedFullName);",
+              "    }",
+              "});",
+              "",
+              "pm.test(\"[Body] Member's 'username' matches collection variable\", function () {",
+              "    const foundMember = findMemberById(jsonData && jsonData.members, idMember);",
+              "    pm.expect(foundMember, `Member with id '${idMember}' not found`).to.exist;",
+              "    pm.expect(expectedUsername, \"Collection variable 'addedMember_Username' is not set\").to.exist;",
+              "    if (foundMember && expectedUsername) {",
+              "        pm.expect(foundMember.username, `Expected username '${expectedUsername}', got '${foundMember.username}'`).to.eql(expectedUsername);",
+              "    }",
+              "});",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "id": "5075f252-e47b-4ac5-a607-0ecb8786de2a",
+            "exec": [
+              "// Pre-request script for 'Add_Member_To_The_Board'",
+              "// Validates required variables and prepares for dynamic value generation",
+              "",
+              "/**",
+              " * Helper to get variable value from all scopes in order: request, collection, environment, globals",
+              " */",
+              "function getVariable(key) {",
+              "    return pm.variables.get(key);",
+              "}",
+              "",
+              "/**",
+              " * Helper to check if a variable is set and not empty",
+              " */",
+              "function isSetAndNotEmpty(value) {",
+              "    return value !== undefined && value !== null && String(value).trim() !== '';",
+              "}",
+              "",
+              "// List of required variables and their sources",
+              "const requiredVars = [",
+              "    { key: 'idMember', source: 'collection' },",
+              "    { key: 'addedMember_Type', source: 'collection' },",
+              "    { key: 'board_ID', source: 'request' },",
+              "    { key: 'API_key', source: 'environment' },",
+              "    { key: 'token', source: 'environment' }",
+              "];",
+              "",
+              "let missingVars = [];",
+              "",
+              "// Validate required variables",
+              "requiredVars.forEach(function(v) {",
+              "    const value = getVariable(v.key);",
+              "    if (!isSetAndNotEmpty(value)) {",
+              "        missingVars.push(v.key);",
+              "    }",
+              "});",
+              "",
+              "if (missingVars.length > 0) {",
+              "    throw new Error('Missing required variables: ' + missingVars.join(', ') + '. Please set them before running this request.');",
+              "}",
+              "",
+              "// --- Normalization Section ---",
+              "// Normalize types or formats if needed (example: ensure idMember is string, addedMember_Type is lowercase)",
+              "// Uncomment and adjust as needed for your API requirements",
+              "// pm.collectionVariables.set('idMember', String(getVariable('idMember')));",
+              "// pm.collectionVariables.set('addedMember_Type', String(getVariable('addedMember_Type')).toLowerCase());",
+              "",
+              "// --- Dynamic Value Generation Placeholders ---",
+              "// Example: Fetch/generate idMember dynamically if not set",
+              "// if (!isSetAndNotEmpty(getVariable('idMember'))) {",
+              "//     // Fetch or generate idMember here",
+              "//     // pm.collectionVariables.set('idMember', generatedValue);",
+              "// }",
+              "",
+              "// Add similar blocks for other variables as needed",
+              "",
+              "// Script ready for automated runs and easy maintenance",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "id": "2e0119c0-da1b-45a7-ad5c-ff6d5ab0ecca",
+      "request": {
+        "method": "PUT",
+        "url": {
+          "raw": "{{BaseUrl}}{{board_ID}}/members/{{idMember}}?key={{API_key}}&token={{token}}&type={{addedMember_Type}}&allowBillableGuest={{allowBillableGuest}}",
+          "host": [
+            "{{BaseUrl}}{{board_ID}}"
+          ],
+          "path": [
+            "members",
+            "{{idMember}}"
+          ],
+          "query": [
+            {
+              "key": "key",
+              "value": "{{API_key}}"
+            },
+            {
+              "key": "token",
+              "value": "{{token}}"
+            },
+            {
+              "key": "type",
+              "value": "{{addedMember_Type}}"
+            },
+            {
+              "key": "allowBillableGuest",
+              "value": "{{allowBillableGuest}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get_The_Members_Of_The_Board",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "id": "fa71378a-c34f-4731-8ca7-0af24de71894",
+            "exec": [
+              "// List of required variables\r",
+              "const requiredVars = [\r",
+              "    { name: 'idMember', source: 'collection' },\r",
+              "    { name: 'addedMember_Type', source: 'collection' },\r",
+              "    { name: 'board_ID', source: 'request' },\r",
+              "    { name: 'API_key', source: 'environment' },\r",
+              "    { name: 'token', source: 'environment' }\r",
+              "];\r",
+              "\r",
+              "// Helper to get variable value by scope\r",
+              "function getVar(name, source) {\r",
+              "    switch (source) {\r",
+              "        case 'environment': return pm.environment.get(name);\r",
+              "        case 'collection': return pm.collectionVariables.get(name);\r",
+              "        case 'request': return pm.variables.get(name);\r",
+              "        default: return undefined;\r",
+              "    }\r",
+              "}\r",
+              "\r",
+              "// Validate all required variables\r",
+              "let missingVars = [];\r",
+              "requiredVars.forEach(v => {\r",
+              "    const value = getVar(v.name, v.source);\r",
+              "    if (value === undefined || value === null || value === '') {\r",
+              "        missingVars.push(v.name);\r",
+              "    }\r",
+              "});\r",
+              "\r",
+              "if (missingVars.length > 0) {\r",
+              "    throw new Error('Missing required variables: ' + missingVars.join(', '));\r",
+              "}\r",
+              "\r",
+              "// Placeholders for normalization or dynamic value fetching\r",
+              "// Example: Normalize idMember to string\r",
+              "// let idMember = String(pm.collectionVariables.get('idMember'));\r",
+              "\r",
+              "// Example: Fetch dynamic value if needed in the future\r",
+              "// pm.sendRequest('https://api.example.com/getValue', function (err, res) {\r",
+              "//     pm.collectionVariables.set('dynamicValue', res.json().value);\r",
+              "// });"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "id": "9b2acaca-69bd-4c62-97b3-f846ce88f87b",
+            "exec": [
+              "// Check for successful response\r",
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "// Check response time\r",
+              "pm.test(\"Response time is less than 2000ms\", function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+              "});\r",
+              "\r",
+              "// Parse response JSON\r",
+              "let jsonData;\r",
+              "try {\r",
+              "    jsonData = pm.response.json();\r",
+              "    pm.test(\"Response is valid JSON\", function () {\r",
+              "        pm.expect(jsonData).to.be.an(\"array\");\r",
+              "    });\r",
+              "} catch (e) {\r",
+              "    pm.test(\"Response is valid JSON\", function () {\r",
+              "        pm.expect.fail(\"Response is not valid JSON\");\r",
+              "    });\r",
+              "}\r",
+              "\r",
+              "// Get expected values from variables\r",
+              "const idMember = pm.collectionVariables.get('idMember');\r",
+              "const expectedType = pm.collectionVariables.get('addedMember_Type');\r",
+              "\r",
+              "// Find the member in the response\r",
+              "let member;\r",
+              "if (Array.isArray(jsonData)) {\r",
+              "    member = jsonData.find(m => m.id === idMember);\r",
+              "}\r",
+              "\r",
+              "// Check that the member exists in the response\r",
+              "pm.test(\"Added member is present in response\", function () {\r",
+              "    pm.expect(member, \"Member with id \" + idMember + \" should exist\").to.not.be.undefined;\r",
+              "});\r",
+              "\r",
+              "// Check that the member has all required properties\r",
+              "if (member) {\r",
+              "    pm.test(\"Member has all required properties\", function () {\r",
+              "        pm.expect(member).to.have.property(\"id\");\r",
+              "        pm.expect(member).to.have.property(\"fullName\");\r",
+              "        pm.expect(member).to.have.property(\"username\");\r",
+              "    });\r",
+              "\r",
+              "    // Only check type/memberType if it exists in the response\r",
+              "    pm.test(\"Member type property is present if expected\", function () {\r",
+              "        if (member.type !== undefined || member.memberType !== undefined) {\r",
+              "            pm.expect(\r",
+              "                member.type || member.memberType,\r",
+              "                \"Member type should match expected\"\r",
+              "            ).to.eql(expectedType);\r",
+              "        } else {\r",
+              "            pm.expect(true, \"Member type/memberType property does not exist in response, skipping type check.\").to.be.true;\r",
+              "        }\r",
+              "    });\r",
+              "} else {\r",
+              "    pm.test(\"Member details cannot be checked because member was not found\", function () {\r",
+              "        pm.expect.fail(\"Member with id \" + idMember + \" not found in response.\");\r",
+              "    });\r",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "id": "873e014d-2cfc-47cf-ac93-6482ba56f6ed",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{BaseUrl}}{{board_ID}}/members?key={{API_key}}&token={{token}}",
+          "host": [
+            "{{BaseUrl}}{{board_ID}}"
+          ],
+          "path": [
+            "members"
+          ],
+          "query": [
+            {
+              "key": "key",
+              "value": "{{API_key}}"
+            },
+            {
+              "key": "token",
+              "value": "{{token}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Delete_Member_From_The_Board",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "id": "78eead72-71a3-47ff-a407-71a40830ffc4",
+            "exec": [
+              "// Pre-request script for 'Delete_Member_From_The_Board'",
+              "// Validates required variables and prepares for future dynamic value generation",
+              "",
+              "// List of required variables and their sources",
+              "const requiredVars = [",
+              "    { key: 'board_ID', source: 'variables' }, // request-level variable",
+              "    { key: 'idMember', source: 'variables' }, // request-level variable",
+              "    { key: 'API_key', source: 'environment' },",
+              "    { key: 'token', source: 'environment' },",
+              "    { key: 'BaseUrl', source: 'environment' }",
+              "];",
+              "",
+              "// Helper to get variable value from the correct scope",
+              "function getVar(key, source) {",
+              "    switch (source) {",
+              "        case 'environment':",
+              "            return pm.environment.get(key);",
+              "        case 'variables':",
+              "            return pm.variables.get(key);",
+              "        default:",
+              "            return undefined;",
+              "    }",
+              "}",
+              "",
+              "// Validate required variables",
+              "let missingVars = [];",
+              "requiredVars.forEach(({ key, source }) => {",
+              "    const value = getVar(key, source);",
+              "    if (value === undefined || value === null || String(value).trim() === '') {",
+              "        missingVars.push(key);",
+              "    }",
+              "});",
+              "",
+              "if (missingVars.length > 0) {",
+              "    throw new Error(",
+              "        'Missing required variable(s): ' + missingVars.join(', ') +",
+              "        '. Please set these before running the request.'",
+              "    );",
+              "}",
+              "",
+              "// Normalize types/formats if needed",
+              "// Example: Ensure board_ID and idMember are strings (IDs)",
+              "pm.variables.set('board_ID', String(pm.variables.get('board_ID')));",
+              "pm.variables.set('idMember', String(pm.variables.get('idMember')));",
+              "",
+              "// Example: Ensure BaseUrl ends with a slash (optional, adjust as needed)",
+              "let baseUrl = pm.environment.get('BaseUrl');",
+              "if (baseUrl && !baseUrl.endsWith('/')) {",
+              "    pm.environment.set('BaseUrl', baseUrl + '/');",
+              "}",
+              "",
+              "// Placeholder for dynamic value fetching/generation",
+              "// e.g., Fetch latest idMember if not set",
+              "// if (!pm.variables.get('idMember')) {",
+              "//     // pm.sendRequest({ ... }, function (err, res) { ... });",
+              "// }",
+              "",
+              "// Ready for automated runs and easy maintenance"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "id": "74d8b82a-feb1-43b8-bac8-f047d2bceb0e",
+            "exec": [
+              "// Robust post-response (test) script for 'Delete_Member_From_The_Board'",
+              "// 1. Check for successful status code (200, 204, or expected)",
+              "// 2. Validate response time and content-type",
+              "// 3. If API returns a body, assert member is deleted or response confirms deletion",
+              "// 4. Handle edge cases (empty/unexpected responses)",
+              "// 5. Clear error messages",
+              "// 6. Maintainable for automation",
+              "",
+              "const expectedStatusCodes = [200, 204];",
+              "const maxResponseTimeMs = 2000; // Adjust as needed",
+              "const expectedContentTypes = [",
+              "    'application/json',",
+              "    'application/json; charset=utf-8',",
+              "    'text/plain',",
+              "    'text/plain; charset=utf-8',",
+              "    '' // Some DELETEs may return no content-type",
+              "];",
+              "const deletedMemberId = pm.variables.get('idMember');",
+              "",
+              "// 1. Status code check",
+              "pm.test(\"Status code is successful (200 or 204)\", function () {",
+              "    pm.expect(pm.response.code, `Expected status 200 or 204, got ${pm.response.code}`).to.be.oneOf(expectedStatusCodes);",
+              "});",
+              "",
+              "// 2. Response time check",
+              "pm.test(\"Response time is under \" + maxResponseTimeMs + \"ms\", function () {",
+              "    pm.expect(pm.response.responseTime, `Response time ${pm.response.responseTime}ms exceeds ${maxResponseTimeMs}ms`).to.be.below(maxResponseTimeMs);",
+              "});",
+              "",
+              "// 3. Content-Type check",
+              "pm.test(\"Content-Type is valid or empty (for 204)\", function () {",
+              "    const contentType = pm.response.headers.get('Content-Type') || '';",
+              "    pm.expect(",
+              "        expectedContentTypes.some(type => contentType.toLowerCase().startsWith(type)),",
+              "        `Unexpected Content-Type: '${contentType}'`",
+              "    ).to.be.true;",
+              "});",
+              "",
+              "// 4. Body/content validation (if present)",
+              "if (pm.response.code !== 204) {",
+              "    pm.test(\"Response body is present or empty string\", function () {",
+              "        pm.expect(typeof pm.response.text()).to.be.oneOf(['string', 'undefined']);",
+              "    });",
+              "    ",
+              "    let body = pm.response.text();",
+              "    if (body && body.trim().length > 0) {",
+              "        let json;",
+              "        try {",
+              "            json = pm.response.json();",
+              "        } catch (e) {",
+              "            json = null;",
+              "        }",
+              "        if (json) {",
+              "            // Try to find a confirmation or absence of member",
+              "            pm.test(\"Response confirms member deletion\", function () {",
+              "                // Common patterns: { success: true }, { message: \"deleted\" }, etc.",
+              "                const msg = (json.message || json.result || json.status || '').toString().toLowerCase();",
+              "                pm.expect(",
+              "                    json.success === true ||",
+              "                    msg.includes('deleted') ||",
+              "                    msg.includes('removed') ||",
+              "                    (Array.isArray(json.members) && !json.members.includes(deletedMemberId)),",
+              "                    `Response does not clearly confirm deletion or member still present. Response: ${JSON.stringify(json)}`",
+              "                ).to.be.true;",
+              "            });",
+              "        } else {",
+              "            // Not JSON: check for deleted/removed in plain text",
+              "            pm.test(\"Response text confirms deletion\", function () {",
+              "                pm.expect(",
+              "                    body.toLowerCase().includes('deleted') ||",
+              "                    body.toLowerCase().includes('removed'),",
+              "                    `Response text does not confirm deletion. Response: ${body}`",
+              "                ).to.be.true;",
+              "            });",
+              "        }",
+              "    } else {",
+              "        pm.test(\"Response body is empty as expected for DELETE\", function () {",
+              "            pm.expect(body === '' || body === undefined, `Expected empty body, got: '${body}'`).to.be.true;",
+              "        });",
+              "    }",
+              "} else {",
+              "    pm.test(\"No content as expected for 204 response\", function () {",
+              "        pm.expect(pm.response.text() === '' || pm.response.text() === undefined, \"Expected no content for 204 response\").to.be.true;",
+              "    });",
+              "}",
+              "",
+              "// 5. Edge case: Unexpected status code",
+              "pm.test(\"No unexpected status codes (fail if not 200/204)\", function () {",
+              "    pm.expect(expectedStatusCodes).to.include(pm.response.code, `Unexpected status code: ${pm.response.code}`);",
+              "});",
+              "",
+              "// 6. Edge case: Unexpected response shape",
+              "if (pm.response.code === 200 && pm.response.text().trim().length > 0) {",
+              "    let isJson = false;",
+              "    try {",
+              "        pm.response.json();",
+              "        isJson = true;",
+              "    } catch (e) {}",
+              "    pm.test(\"Response is valid JSON or plain text\", function () {",
+              "        pm.expect(isJson || typeof pm.response.text() === 'string', \"Response is neither valid JSON nor plain text\").to.be.true;",
+              "    });",
+              "}",
+              "",
+              "// 7. Ready for automation: All tests provide clear error messages and are robust to empty/unexpected responses."
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "id": "db6eea7a-2b00-41a3-809b-0d39d94abb07",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{BaseUrl}}{{board_ID}}/members/{{idMember}}?key={{API_key}}&token={{token}}",
+          "host": [
+            "{{BaseUrl}}{{board_ID}}"
+          ],
+          "path": [
+            "members",
+            "{{idMember}}"
+          ],
+          "query": [
+            {
+              "key": "key",
+              "value": "{{API_key}}"
+            },
+            {
+              "key": "token",
+              "value": "{{token}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Delete_Board",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "id": "8f076d8e-bb21-4992-8220-df3510f2c900",
+            "exec": [
+              "// -----------------------------\r",
+              "// Pre-request: Delete Board\r",
+              "// -----------------------------\r",
+              "\r",
+              "// Helper: validate board_ID format\r",
+              "function validateHex24(value, varName) {\r",
+              "    const hex24 = /^[0-9a-fA-F]{24}$/;\r",
+              "    if (!value || !hex24.test(value)) {\r",
+              "        throw new Error(`[Pre-request Validation] ${varName} is missing or invalid (must be 24 hex chars)`);\r",
+              "    }\r",
+              "}\r",
+              "\r",
+              "// Get board_ID from collection variable\r",
+              "const boardId = pm.environment.get('board_ID');\r",
+              "\r",
+              "// Validate\r",
+              "validateHex24(boardId, 'board_ID');\r",
+              "\r",
+              "// Optional logging\r",
+              "console.log(`Deleting board with board_ID: ${boardId}`);\r",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "id": "084fdcf0-e9b7-4b80-95a7-93cebaa92025",
+            "exec": [
+              "// -----------------------------\r",
+              "// Post-response Tests: Delete Board\r",
+              "// -----------------------------\r",
+              "\r",
+              "// 1. Response time check\r",
+              "pm.test(\"[Performance] Response time is under 2000ms\", function () {\r",
+              "    pm.expect(pm.response.responseTime, \"Response time exceeded 2000ms\").to.be.below(2000);\r",
+              "});\r",
+              "\r",
+              "// 2. Content-Type check\r",
+              "pm.test(\"[Header] Content-Type is application/json\", function () {\r",
+              "    pm.response.to.have.header(\"Content-Type\");\r",
+              "    const contentType = pm.response.headers.get(\"Content-Type\");\r",
+              "    pm.expect(contentType, \"Content-Type should include 'application/json'\").to.include(\"application/json\");\r",
+              "});\r",
+              "\r",
+              "// 3. Parse response JSON safely\r",
+              "let jsonData = null;\r",
+              "let isJson = true;\r",
+              "try {\r",
+              "    jsonData = pm.response.json();\r",
+              "} catch (e) {\r",
+              "    isJson = false;\r",
+              "}\r",
+              "\r",
+              "pm.test(\"[Positive] Response should be valid JSON\", function () {\r",
+              "    pm.expect(isJson, \"Response body is not valid JSON\").to.be.true;\r",
+              "});\r",
+              "\r",
+              "// 4. Status code check: 200 or 202 (Trello deletes may respond with 200/202)\r",
+              "pm.test(\"[Positive] Status code should be 200 or 202 for successful deletion\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 202]);\r",
+              "});\r",
+              "\r",
+              "// 5. Check that response body contains exactly one key '_value' with value null\r",
+              "if (jsonData) {\r",
+              "    pm.test(\"[Positive] Response body contains '_value' key with null\", function () {\r",
+              "        pm.expect(Object.keys(jsonData), \"Response should have exactly one key\").to.eql(['_value']);\r",
+              "        pm.expect(jsonData._value, \"Response '_value' should be null\").to.be.null;\r",
+              "    });\r",
+              "}\r",
+              "\r",
+              "// 6. Clear collection variable for deleted board\r",
+              "pm.collectionVariables.unset('board_ID');\r",
+              "console.log(\"board_ID cleared from collection variables after deletion.\");\r",
+              "\r",
+              "\r",
+              "\r",
+              "\r",
+              "// List of variables to keep\r",
+              "const keepVars = [\r",
+              "    \"idMember\",\r",
+              "    \"addedMember_Type\",\r",
+              "    \"addedMember_Username\",\r",
+              "    \"addedMember_Fullname\",\r",
+              "    \"allowBillableGuest\"\r",
+              "];\r",
+              "\r",
+              "// All collection variables\r",
+              "const allVars = [\r",
+              "    \"idMember\",\r",
+              "    \"addedMember_Type\",\r",
+              "    \"addedMember_Username\",\r",
+              "    \"addedMember_Fullname\",\r",
+              "    \"allowBillableGuest\",\r",
+              "    \"board_Name\",\r",
+              "    \"defaultLabels\",\r",
+              "    \"defaultLists\",\r",
+              "    \"boardDesc\",\r",
+              "    \"idOrganization\",\r",
+              "    \"keepFromSource\",\r",
+              "    \"powerUps\",\r",
+              "    \"prefs_permissionLevel\",\r",
+              "    \"prefs_voting\",\r",
+              "    \"prefs_comments\",\r",
+              "    \"prefs_invitations\",\r",
+              "    \"prefs_selfJoin\",\r",
+              "    \"prefs_cardCovers\",\r",
+              "    \"prefs_background\",\r",
+              "    \"prefs_cardAging\",\r",
+              "    \"closed\",\r",
+              "    \"subscribed\",\r",
+              "    \"permissionLevel\",\r",
+              "    \"selfJoin\",\r",
+              "    \"cardCovers\",\r",
+              "    \"hideVotes\",\r",
+              "    \"invitations\",\r",
+              "    \"voting\",\r",
+              "    \"comments\",\r",
+              "    \"background\",\r",
+              "    \"cardAging\",\r",
+              "    \"calendarFeedEnabled\"\r",
+              "];\r",
+              "\r",
+              "// Unset all variables except those in keepVars\r",
+              "allVars.forEach(function(varName) {\r",
+              "    if (!keepVars.includes(varName)) {\r",
+              "        pm.collectionVariables.unset(varName);\r",
+              "    }\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "id": "f9766c6f-a7fc-4adb-8121-25cd5b9f1515",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{BaseUrl}}{{board_ID}}?key={{API_key}}&token={{token}}",
+          "host": [
+            "{{BaseUrl}}{{board_ID}}"
+          ],
+          "query": [
+            {
+              "key": "key",
+              "value": "{{API_key}}"
+            },
+            {
+              "key": "token",
+              "value": "{{token}}"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "id": "a955191c-5f21-4472-88f5-eff4a78ce5e4",
+      "key": "idMember",
+      "value": ""
+    },
+    {
+      "id": "9409d74e-0736-48b9-b0e8-7c66c560bec5",
+      "key": "addedMember_Type",
+      "value": ""
+    },
+    {
+      "id": "849c47df-2cd0-448c-8f65-38a6a4a69cc5",
+      "key": "addedMember_Username",
+      "value": ""
+    },
+    {
+      "id": "d44b9e8e-426f-4742-a40f-c473ec12c5ed",
+      "key": "addedMember_Fullname",
+      "value": ""
+    },
+    {
+      "id": "40fbeaa1-0bac-45d2-825c-2dacc4a709ef",
+      "key": "allowBillableGuest",
+      "value": ""
+    }
+  ]
+}
