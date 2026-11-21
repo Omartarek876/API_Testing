@@ -1,0 +1,90 @@
+name: Postman API Tests
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  automationexercise-api:
+    name: AutomationExercise API suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Postman runtime libraries
+        run: npm install postman-collection postman-runtime
+      - name: Run AutomationExercise collection
+        run: >
+          node scripts/run-api-collection.js
+          --collection postman/API_Testing_AutomationExcercises/AutomationExercise-API.postman_collection.json
+          --environment postman/API_Testing_AutomationExcercises/Testing_Env.postman_environment.json
+          --env-var "BaseURL_WithAPI_Path=https://automationexercise.com/api/"
+          --env-var "LoginValidEmail=amoriiiii@gmail.com"
+          --env-var "LoginValidPassword=omaramorii"
+          --env-var "LoginValidName=omartarek"
+          --env-var "LoginInvalidEmail=not.a.real.user.${{ github.run_id }}@gmail.com"
+          --env-var "LoginInvalidPassword=wrong-password-123"
+          --env-var "Cred_email=omar.ci.${{ github.run_id }}.${{ github.run_attempt }}@gmail.com"
+          --env-var "Cred_password=CiRun-${{ github.run_id }}"
+          --report reports/automationexercise-api-report.html
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: automationexercise-api-report
+          path: reports/automationexercise-api-report.html
+          if-no-files-found: ignore
+
+  trello-api:
+    name: Trello API suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check Trello credentials
+        id: creds
+        env:
+          TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
+          TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}
+        run: |
+          if [ -z "$TRELLO_API_KEY" ] || [ -z "$TRELLO_TOKEN" ]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::TRELLO_API_KEY and TRELLO_TOKEN repository secrets are not set, skipping the Trello suite."
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Install Postman runtime libraries
+        if: steps.creds.outputs.available == 'true'
+        run: npm install postman-collection postman-runtime
+      - name: Run Trello collection
+        if: steps.creds.outputs.available == 'true'
+        env:
+          TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
+          TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}
+        run: >
+          node scripts/run-api-collection.js
+          --collection postman/API_Testing_Trello/GS_API_Testing.postman_collection.json
+          --environment postman/API_Testing_Trello/GS_Testing_Env.postman_environment.json
+          --env-var "BaseUrl=https://api.trello.com/1/boards/"
+          --env-var "API_key=$TRELLO_API_KEY"
+          --env-var "token=$TRELLO_TOKEN"
+          --report reports/trello-api-report.html
+      - name: Upload HTML report
+        if: always() && steps.creds.outputs.available == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: trello-api-report
+          path: reports/trello-api-report.html
+          if-no-files-found: ignore
