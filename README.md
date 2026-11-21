@@ -1,4 +1,4 @@
-# API Testing with Postman
+# API_Testing
 
 A collection of Postman API test suites that validate two public APIs, **AutomationExercise** and **Trello**. The suites cover positive and negative scenarios across `GET`, `POST`, `PUT`, and `DELETE` requests, with automated assertions written as Postman test scripts.
 
