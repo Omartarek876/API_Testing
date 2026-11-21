@@ -26,7 +26,8 @@ This project demonstrates end-to-end API testing with Postman:
 ## Tech Stack
 
 - **Postman**: request collections, environments, and test scripts (JavaScript)
-- **Newman** (optional): running the collections from the command line
+- **Node.js** (optional): command-line collection runner (`scripts/run-api-collection.js`)
+- **GitHub Actions**: CI workflow that runs the suites on every push
 - **Git & GitHub**: version control
 
 ## Project Structure
@@ -34,6 +35,11 @@ This project demonstrates end-to-end API testing with Postman:
 ```
 API_Testing/
 ├── README.md
+├── .github/
+│   └── workflows/
+│       └── CI.yml
+├── scripts/
+│   └── run-api-collection.js
 └── postman/
     ├── API_Testing_AutomationExcercises/
     │   ├── AutomationExercise-API.postman_collection.json
@@ -89,7 +95,7 @@ Covers the full lifecycle of a Trello board and its members:
 ### Prerequisites
 
 - [Postman](https://www.postman.com/downloads/) installed
-- (Optional) [Node.js](https://nodejs.org/) and [Newman](https://www.npmjs.com/package/newman) for command-line runs
+- (Optional) [Node.js](https://nodejs.org/) for command-line runs
 
 ### Run in Postman
 
@@ -118,17 +124,23 @@ Covers the full lifecycle of a Trello board and its members:
 
 4. Open the collection and click **Run collection**, keeping the requests in their folder order.
 
-### Run with Newman (optional)
+### Run from the command line (optional)
+
+The repository includes a small Node.js runner that executes a collection file, applies environment variables, and writes an HTML report:
 
 ```bash
-npm install -g newman
+npm install postman-collection postman-runtime
 
-newman run postman/API_Testing_AutomationExcercises/AutomationExercise-API.postman_collection.json \
-  -e postman/API_Testing_AutomationExcercises/Testing_Env.postman_environment.json
+node scripts/run-api-collection.js \
+  --collection postman/API_Testing_AutomationExcercises/AutomationExercise-API.postman_collection.json \
+  --environment postman/API_Testing_AutomationExcercises/Testing_Env.postman_environment.json
 
-newman run postman/API_Testing_Trello/GS_API_Testing.postman_collection.json \
-  -e postman/API_Testing_Trello/GS_Testing_Env.postman_environment.json
+node scripts/run-api-collection.js \
+  --collection postman/API_Testing_Trello/GS_API_Testing.postman_collection.json \
+  --environment postman/API_Testing_Trello/GS_Testing_Env.postman_environment.json
 ```
+
+Environment variables can also be passed without editing the environment files, for example `--env-var "BaseURL_WithAPI_Path=https://automationexercise.com/api/"`. The GitHub Actions CI uses the same runner and uploads the HTML reports as workflow artifacts.
 
 > **Security note:** The environment files in this repository are shared without values. Never commit real credentials, API keys, or tokens. Keep them in your local Postman environment only.
 
