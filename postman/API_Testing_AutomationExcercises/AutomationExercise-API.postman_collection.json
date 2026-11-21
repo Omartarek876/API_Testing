@@ -1353,22 +1353,6 @@
           "name": "TC11_POST_To_Create_UserAccount",
           "event": [
             {
-              "listen": "prerequest",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "// After creating a board, save its ID to the environment for use in update/delete requests",
-                  "if (pm.response.code === 200) {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.id) {",
-                  "        pm.environment.set('board_ID', jsonData.id);",
-                  "        pm.variables.set('board_ID', jsonData.id); // Also set as local variable for immediate use",
-                  "    }",
-                  "}"
-                ]
-              }
-            },
-            {
               "listen": "test",
               "script": {
                 "id": "6ad1a3c4-141e-4b0a-882f-5d901b4e6624",
