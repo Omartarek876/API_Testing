@@ -99,7 +99,8 @@ runner.run(collection, {
       console.log('warning: script error - ' + msg);
     },
     console: function () {},
-    done: function () {
+    done: function (err) {
+      if (err) failures.push(err.message || String(err));
       const total = results.reduce((n, r) => n + r.assertions.filter(a => !a.skipped).length, 0);
       const passed = results.reduce((n, r) => n + r.assertions.filter(a => !a.skipped && a.passed).length, 0);
       const failed = total - passed;
@@ -113,7 +114,7 @@ runner.run(collection, {
         fs.mkdirSync(path.dirname(opts.report), { recursive: true });
         fs.writeFileSync(opts.report, buildReport());
       }
-      process.exit(failed || failures.length ? 1 : 0);
+      process.exit(failed || failures.length || scriptWarnings.length || !results.length || !total ? 1 : 0);
     }
   });
 });
